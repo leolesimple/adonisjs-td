@@ -1,5 +1,9 @@
+import { mkdirSync } from 'node:fs'
 import app from '@adonisjs/core/services/app'
 import { defineConfig } from '@adonisjs/lucid'
+
+// tmp/ est ignoré par git : SQLite ne crée pas le dossier, on le crée au premier lancement
+mkdirSync(app.tmpPath(), { recursive: true })
 
 const dbConfig = defineConfig({
   connection: 'sqlite',
