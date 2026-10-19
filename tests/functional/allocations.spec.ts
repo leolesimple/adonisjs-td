@@ -15,12 +15,12 @@ test.group('Allocations', (group) => {
     const source = await FundingSource.create({ name: 'Livret A', type: 'savings' })
     const response = await client
       .post(`/wishes/${wish.id}/allocations`)
-      .form({ fundingSourceId: source.id, amount: 143 })
+      .form({ fundingSourceId: source.id, amount: 43 })
       .redirects(0)
 
     response.assertStatus(302)
     const allocation = await Allocation.firstOrFail()
-    assert.equal(allocation.amountCents, 14300)
+    assert.equal(allocation.amountCents, 4300)
     assert.equal(allocation.fundingSourceId, source.id)
   })
 
@@ -69,5 +69,55 @@ test.group('Allocations', (group) => {
     await client.delete(`/wishes/${wish.id}`).redirects(0)
 
     assert.isNull(await Allocation.first())
+  })
+})
+
+test.group('Allocations | price cap', (group) => {
+  group.each.setup(() => testUtils.db().truncate())
+
+  test('store refuses an amount above what is left to allocate', async ({ client, assert }) => {
+    const wish = await Wish.create({
+      name: 'Clavier',
+      priceCents: 12900,
+      priority: 'low',
+      status: 'wished',
+      rank: 1,
+    })
+    const source = await FundingSource.create({ name: 'Livret A', type: 'savings' })
+    await client
+      .post(`/wishes/${wish.id}/allocations`)
+      .form({ fundingSourceId: source.id, amount: 200 })
+      .redirects(0)
+
+    assert.isNull(await Allocation.first())
+  })
+
+  test('store accepts the exact remaining amount, then refuses any more', async ({
+    client,
+    assert,
+  }) => {
+    const wish = await Wish.create({
+      name: 'Clavier',
+      priceCents: 12900,
+      priority: 'low',
+      status: 'wished',
+      rank: 1,
+    })
+    const source = await FundingSource.create({ name: 'Livret A', type: 'savings' })
+    await client
+      .post(`/wishes/${wish.id}/allocations`)
+      .form({ fundingSourceId: source.id, amount: 100 })
+      .redirects(0)
+    await client
+      .post(`/wishes/${wish.id}/allocations`)
+      .form({ fundingSourceId: source.id, amount: 29 })
+      .redirects(0)
+    await client
+      .post(`/wishes/${wish.id}/allocations`)
+      .form({ fundingSourceId: source.id, amount: 0.01 })
+      .redirects(0)
+
+    const total = await Allocation.query().sum('amount_cents as total')
+    assert.equal(Number(total[0].$extras.total), 12900)
   })
 })

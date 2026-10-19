@@ -96,9 +96,18 @@ export default class WishesController {
     }
   }
 
-  async update({ params, request, response }: HttpContext) {
-    const wish = await Wish.findOrFail(params.id)
+  async update({ params, request, response, session }: HttpContext) {
+    const wish = await Wish.query().where('id', params.id).preload('allocations').firstOrFail()
     const payload = await request.validateUsing(wishValidator)
+
+    // Le prix ne peut pas passer sous le total déjà alloué
+    const allocatedCents = wish.allocations.reduce((sum, a) => sum + a.amountCents, 0)
+    if (toCents(payload.price) < allocatedCents) {
+      session.flash('errors', {
+        price: `Le prix ne peut pas être inférieur aux ${(allocatedCents / 100).toFixed(2).replace('.', ',')} € déjà alloués.`,
+      })
+      return response.redirect().back()
+    }
     wish.merge(toColumns(payload))
     await wish.save()
     return response.redirect().toRoute('wishes.show', { id: wish.id })

@@ -97,7 +97,11 @@ export default function Show({
 
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-lg font-semibold">Financement</h2>
-        <Button size="sm" onClick={() => setAdding(true)}>
+        <Button
+          size="sm"
+          onClick={() => setAdding(true)}
+          disabled={wish.allocatedCents >= wish.priceCents}
+        >
           <Plus /> Ajouter
         </Button>
       </div>

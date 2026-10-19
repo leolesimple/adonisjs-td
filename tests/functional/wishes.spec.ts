@@ -131,6 +131,26 @@ test.group('Wishes CRUD', (group) => {
     assert.isNull(wish.category)
   })
 
+  test('update refuses a price below the amount already allocated', async ({ client, assert }) => {
+    const wish = await makeWish({ priceCents: 20000 })
+    const source = await FundingSource.create({ name: 'Livret A', type: 'savings' })
+    await Allocation.create({ wishId: wish.id, fundingSourceId: source.id, amountCents: 15000 })
+
+    await client
+      .put(`/wishes/${wish.id}`)
+      .form({ ...valid, price: 100 })
+      .redirects(0)
+    await wish.refresh()
+    assert.equal(wish.priceCents, 20000)
+
+    await client
+      .put(`/wishes/${wish.id}`)
+      .form({ ...valid, price: 150 })
+      .redirects(0)
+    await wish.refresh()
+    assert.equal(wish.priceCents, 15000)
+  })
+
   test('move swaps the rank with the neighbour', async ({ client, assert }) => {
     const first = await makeWish({ name: 'Premier', rank: 1 })
     const second = await makeWish({ name: 'Second', rank: 2 })

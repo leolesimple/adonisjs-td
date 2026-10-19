@@ -12,9 +12,10 @@ import {
 } from '~/components/ui/dialog'
 import { Input } from '~/components/ui/input'
 import { a11y } from '~/lib/a11y'
+import { formatEuros } from '~/lib/format'
 
 interface Props {
-  wish: { id: number; name: string }
+  wish: { id: number; name: string; priceCents: number; allocatedCents: number }
   sources: { id: number; name: string }[]
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -48,13 +49,14 @@ function AllocationForm({
         id="amount"
         label="Montant prélevé (€)"
         error={errors.amount}
-        hint="La somme des allocations doit couvrir le prix de l'envie."
+        hint={`Il reste ${formatEuros(Math.max(wish.priceCents - wish.allocatedCents, 0))} à allouer.`}
       >
         <Input
           {...a11y('amount', errors.amount)}
           type="number"
           step="0.01"
           min="0"
+          max={Math.max(wish.priceCents - wish.allocatedCents, 0) / 100}
           value={data.amount}
           onChange={(e) => setData('amount', e.target.value)}
         />
