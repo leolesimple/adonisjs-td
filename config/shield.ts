@@ -1,4 +1,3 @@
-import app from '@adonisjs/core/services/app'
 import { defineConfig } from '@adonisjs/shield'
 
 const shieldConfig = defineConfig({
@@ -17,8 +16,7 @@ const shieldConfig = defineConfig({
    * to learn more
    */
   csrf: {
-    // Désactivé en test : les requêtes du client HTTP de Japa n'ont pas de session
-    enabled: !app.inTest,
+    enabled: true,
     exceptRoutes: [],
     enableXsrfCookie: true,
     methods: ['POST', 'PUT', 'PATCH', 'DELETE'],

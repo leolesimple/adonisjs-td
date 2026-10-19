@@ -24,12 +24,11 @@ Projet réalisé pour le TD AdonisJS (BUT MMI 3).
 
 ## Technologies
 
-- [AdonisJS 6](https://adonisjs.com) (routes, contrôleurs, validation, tests)
+- [AdonisJS 6](https://adonisjs.com) (routes, contrôleurs, validation)
 - [Lucid ORM](https://lucid.adonisjs.com) avec SQLite
 - [VineJS](https://vinejs.dev) pour la validation (messages en français)
 - [Inertia.js](https://inertiajs.com) avec React 19 et rendu côté serveur
 - [Tailwind CSS v4](https://tailwindcss.com) et [shadcn/ui](https://ui.shadcn.com) (sidebar, modales)
-- [Japa](https://japa.dev) pour les tests
 
 ## Installation
 
@@ -57,7 +56,6 @@ de démonstration : une financée à la prochaine paie, une qui rate sa date cib
 | Commande | Rôle |
 | --- | --- |
 | `npm run dev` | Serveur de développement avec rechargement à chaud |
-| `node ace test` | Lance tous les tests (base SQLite séparée, `tmp/db.test.sqlite3`) |
 | `npm run typecheck` | Vérification TypeScript |
 | `npm run lint` | ESLint et Prettier |
 | `node ace migration:fresh --seed` | Repart d'une base vide avec les données de démo |
@@ -78,7 +76,6 @@ inertia/
   components/    sidebar, layout, modales (envie, allocation, compte, virement, confirmation), champs
   components/ui/ composants shadcn/ui
 start/routes.ts  routes
-tests/           unitaires (calcul, clés étrangères) et fonctionnels (CRUD)
 ```
 
 ## Modèle de données
@@ -96,4 +93,4 @@ SQLite n'applique les clés étrangères que si `PRAGMA foreign_keys = ON`, acti
 
 À chaque paie, chaque compte reçoit son budget mensuel, et les virements du mois précédent se débloquent.
 Les envies sont parcourues par rang : une envie est achetée dès que ses allocations sont couvertes par
-l'argent utilisable. Tout est dans `app/services/projection.ts`, une fonction pure testée sans base de données.
+l'argent utilisable. Tout est dans `app/services/projection.ts`, une fonction pure qui ne dépend pas de la base de données.

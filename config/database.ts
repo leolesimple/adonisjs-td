@@ -11,8 +11,7 @@ const dbConfig = defineConfig({
     sqlite: {
       client: 'better-sqlite3',
       connection: {
-        // Base séparée pour les tests : ils ne touchent jamais aux données de démo
-        filename: app.tmpPath(app.inTest ? 'db.test.sqlite3' : 'db.sqlite3'),
+        filename: app.tmpPath('db.sqlite3'),
       },
       useNullAsDefault: true,
       // SQLite n'applique pas les clés étrangères (ON DELETE CASCADE) sans ce pragma
