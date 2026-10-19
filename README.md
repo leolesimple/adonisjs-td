@@ -24,15 +24,15 @@ Projet réalisé pour le TD AdonisJS (BUT MMI 3).
 
 ## Technologies
 
-- [AdonisJS 6](https://adonisjs.com) (routes, contrôleurs, validation)
+- [AdonisJS 7](https://adonisjs.com) (routes nommées, contrôleurs, validation)
 - [Lucid ORM](https://lucid.adonisjs.com) avec SQLite
 - [VineJS](https://vinejs.dev) pour la validation (messages en français)
-- [Inertia.js](https://inertiajs.com) avec React 19 et rendu côté serveur
+- [Inertia.js](https://inertiajs.com) avec React 19 (kit officiel `--kit=react`), URLs générées à partir des routes nommées (Tuyau)
 - [Tailwind CSS v4](https://tailwindcss.com) et [shadcn/ui](https://ui.shadcn.com) (sidebar, modales)
 
 ## Installation
 
-Prérequis : Node.js 22 ou plus récent.
+Prérequis : Node.js 24 ou plus récent.
 
 ```bash
 npm install
@@ -45,7 +45,7 @@ npm run dev
 
 L'application est disponible sur http://localhost:3333.
 
-Le seeder crée deux comptes (CCHQ avec paie le 1er, Livret A), un virement mensuel de 200 € et trois envies
+Le seeder crée deux comptes bancaires (CCHQ avec paie le 1er, Livret A), un virement mensuel de 200 € et trois envies
 de démonstration : une financée à la prochaine paie, une qui rate sa date cible, une sans allocation.
 
 > En mode développement, le premier chargement après le démarrage peut s'afficher sans style
@@ -64,18 +64,20 @@ de démonstration : une financée à la prochaine paie, une qui rate sa date cib
 
 ```
 app/
-  models/        Wish, FundingSource, Allocation (Lucid)
+  models/        Wish, FundingSource, Allocation, MonthlyTransfer (relations Lucid)
   controllers/   wishes, funding_sources, allocations, monthly_transfers, projections
   validators/    schémas VineJS
   services/      projection.ts : calcul de la projection (fonction pure), projection_loader.ts : lecture en base
 database/
-  migrations/    schéma des 3 tables
+  schema.ts      classes de colonnes générées après chaque migration (ne pas modifier)
+  schema_rules.ts types TypeScript personnalisés (montants en number, énumérations)
+  migrations/    schéma des tables
   seeders/       données de démonstration
 inertia/
   pages/         pages React (wishes/index, wishes/show, sources/index, projection/index)
   components/    sidebar, layout, modales (envie, allocation, compte, virement, confirmation), champs
   components/ui/ composants shadcn/ui
-start/routes.ts  routes
+start/routes.ts  routes nommées
 ```
 
 ## Modèle de données
