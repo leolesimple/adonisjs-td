@@ -2,7 +2,7 @@ import vine from '@vinejs/vine'
 
 // Montants en euros : convertis en centimes dans le contrôleur.
 // income / budget / payDay ne concernent que le compte courant (champs optionnels).
-export const fundingSourceValidator = vine.compile(
+export const fundingSourceValidator = vine.create(
   vine.object({
     name: vine.string().trim().minLength(2).maxLength(80),
     type: vine.enum(['savings', 'checking', 'income'] as const),

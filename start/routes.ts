@@ -7,26 +7,23 @@
 |
 */
 
+import { controllers } from '#generated/controllers'
 import router from '@adonisjs/core/services/router'
-
-const WishesController = () => import('#controllers/wishes_controller')
-const FundingSourcesController = () => import('#controllers/funding_sources_controller')
-const AllocationsController = () => import('#controllers/allocations_controller')
-const MonthlyTransfersController = () => import('#controllers/monthly_transfers_controller')
-const ProjectionsController = () => import('#controllers/projections_controller')
 
 router.get('/', ({ response }) => response.redirect().toRoute('wishes.index'))
 
-router.resource('wishes', WishesController).except(['create', 'edit']).params({ wishes: 'id' })
+router.resource('wishes', controllers.Wishes).except(['create', 'edit']).params({ wishes: 'id' })
+router.post('/wishes/:id/move', [controllers.Wishes, 'move']).as('wishes.move')
 router
-  .resource('sources', FundingSourcesController)
+  .post('/wishes/:wishId/allocations', [controllers.Allocations, 'store'])
+  .as('allocations.store')
+router.delete('/allocations/:id', [controllers.Allocations, 'destroy']).as('allocations.destroy')
+
+router
+  .resource('sources', controllers.FundingSources)
   .only(['index', 'store', 'update', 'destroy'])
   .params({ sources: 'id' })
+router.post('/transfers', [controllers.MonthlyTransfers, 'store']).as('transfers.store')
+router.delete('/transfers/:id', [controllers.MonthlyTransfers, 'destroy']).as('transfers.destroy')
 
-router.post('/wishes/:id/move', [WishesController, 'move']).as('wishes.move')
-router.get('/projection', [ProjectionsController, 'index']).as('projection.index')
-router.post('/transfers', [MonthlyTransfersController, 'store']).as('transfers.store')
-router.delete('/transfers/:id', [MonthlyTransfersController, 'destroy']).as('transfers.destroy')
-
-router.post('/wishes/:wishId/allocations', [AllocationsController, 'store']).as('allocations.store')
-router.delete('/allocations/:id', [AllocationsController, 'destroy']).as('allocations.destroy')
+router.get('/projection', [controllers.Projections, 'index']).as('projection.index')

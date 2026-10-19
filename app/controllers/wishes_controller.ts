@@ -1,4 +1,3 @@
-import { DateTime } from 'luxon'
 import type { HttpContext } from '@adonisjs/core/http'
 import Wish from '#models/wish'
 import { wishMoveValidator, wishValidator } from '#validators/wish'
@@ -19,7 +18,8 @@ const toColumns = (payload: Awaited<ReturnType<typeof wishValidator.validate>>) 
   imageUrl: payload.imageUrl ?? null,
   notes: payload.notes ?? null,
   status: payload.status,
-  targetDate: payload.targetDate ? DateTime.fromJSDate(payload.targetDate) : null,
+  // VineJS renvoie déjà un DateTime (transform global dans start/validator.ts)
+  targetDate: payload.targetDate ?? null,
 })
 
 // Une envie vue par le front : ses colonnes + son résultat de projection (null si achetée ou abandonnée)
