@@ -21,15 +21,24 @@ export interface SourceData {
   name: string
   type: SourceType
   notes: string | null
-  monthlyCents: number
+  balanceCents: number
+  monthlyIncomeCents: number | null
+  monthlyBudgetCents: number | null
+  payDay: number | null
   allocatedCents: number
 }
+
+const euros = (cents: number | null) => (cents === null ? '' : String(cents / 100))
 
 function SourceForm({ source, onDone }: { source: SourceData | null; onDone: () => void }) {
   const form = useForm({
     name: source?.name ?? '',
     type: source?.type ?? ('savings' as SourceType),
     notes: source?.notes ?? '',
+    balance: source ? euros(source.balanceCents) : '0',
+    monthlyIncome: euros(source?.monthlyIncomeCents ?? null),
+    monthlyBudget: euros(source?.monthlyBudgetCents ?? null),
+    payDay: source?.payDay === null || source?.payDay === undefined ? '' : String(source.payDay),
   })
   const { data, errors, setData } = form
 
@@ -38,6 +47,23 @@ function SourceForm({ source, onDone }: { source: SourceData | null; onDone: () 
     if (source) form.put(`/sources/${source.id}`, { onSuccess: onDone })
     else form.post('/sources', { onSuccess: onDone })
   }
+
+  const amountField = (
+    name: 'balance' | 'monthlyIncome' | 'monthlyBudget',
+    label: string,
+    hint?: string
+  ) => (
+    <Field id={name} label={label} error={errors[name]} hint={hint}>
+      <Input
+        {...a11y(name, errors[name])}
+        type="number"
+        step="0.01"
+        min="0"
+        value={data[name]}
+        onChange={(e) => setData(name, e.target.value)}
+      />
+    </Field>
+  )
 
   return (
     <form onSubmit={submit} noValidate className="grid gap-4">
@@ -56,6 +82,31 @@ function SourceForm({ source, onDone }: { source: SourceData | null; onDone: () 
         options={Object.entries(sourceTypeLabels).map(([value, label]) => ({ value, label }))}
         error={errors.type}
       />
+      {amountField(
+        'balance',
+        'Disponible pour les envies (€)',
+        "L'argent que ce compte peut déjà consacrer aux envies."
+      )}
+      {data.type === 'checking' && (
+        <>
+          {amountField('monthlyIncome', 'Paie mensuelle (€)')}
+          {amountField(
+            'monthlyBudget',
+            'Budget envies par mois (€)',
+            'Ce que le compte ajoute aux envies à chaque paie.'
+          )}
+          <Field id="payDay" label="Jour de paie (1 à 28)" error={errors.payDay}>
+            <Input
+              {...a11y('payDay', errors.payDay)}
+              type="number"
+              min="1"
+              max="28"
+              value={data.payDay}
+              onChange={(e) => setData('payDay', e.target.value)}
+            />
+          </Field>
+        </>
+      )}
       <Field id="notes" label="Notes" error={errors.notes}>
         <Input
           {...a11y('notes', errors.notes)}
@@ -84,11 +135,11 @@ interface Props {
 export default function SourceFormDialog({ source, open, onOpenChange }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{source ? `Modifier ${source.name}` : 'Nouvelle source'}</DialogTitle>
+          <DialogTitle>{source ? `Modifier ${source.name}` : 'Nouveau compte'}</DialogTitle>
           <DialogDescription>
-            D'où vient l'argent : Livret A, compte chèque, paie…
+            Un compte qui finance tes envies : compte courant, Livret A…
           </DialogDescription>
         </DialogHeader>
         <SourceForm source={source} onDone={() => onOpenChange(false)} />

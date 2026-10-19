@@ -31,7 +31,6 @@ function WishForm({ wish, onDone }: { wish: WishData | null; onDone: () => void 
     imageUrl: wish?.imageUrl ?? '',
     notes: wish?.notes ?? '',
     status: wish?.status ?? 'wished',
-    fundingMode: wish?.fundingMode ?? 'monthly',
     targetDate: wish?.targetDate ?? '',
   })
   const { data, errors, setData } = form
@@ -85,28 +84,19 @@ function WishForm({ wish, onDone }: { wish: WishData | null; onDone: () => void 
           error={errors.status}
         />
       </div>
-      <SelectField
-        id="fundingMode"
-        label="Mode de financement"
-        value={data.fundingMode}
-        onChange={(v) => setData('fundingMode', v as WishData['fundingMode'])}
-        options={[
-          { value: 'monthly', label: 'Mensualités' },
-          { value: 'deadline', label: 'Échéance' },
-        ]}
-        hint="Mensualités : la date d'achat est estimée. Échéance : tu fixes la date à tenir."
-        error={errors.fundingMode}
-      />
-      {data.fundingMode === 'deadline' && (
-        <Field id="targetDate" label="Date à tenir" error={errors.targetDate}>
-          <Input
-            {...a11y('targetDate', errors.targetDate)}
-            type="date"
-            value={data.targetDate}
-            onChange={(e) => setData('targetDate', e.target.value)}
-          />
-        </Field>
-      )}
+      <Field
+        id="targetDate"
+        label="Date cible (facultatif)"
+        error={errors.targetDate}
+        hint="La projection dira si tu la tiens."
+      >
+        <Input
+          {...a11y('targetDate', errors.targetDate)}
+          type="date"
+          value={data.targetDate}
+          onChange={(e) => setData('targetDate', e.target.value)}
+        />
+      </Field>
       {textField('url', 'Lien du produit', 'url')}
       {textField('imageUrl', "URL de l'image", 'url')}
       <Field id="notes" label="Notes" error={errors.notes}>

@@ -1,13 +1,14 @@
 import { useState } from 'react'
-import { Link } from '@inertiajs/react'
-import { Plus } from 'lucide-react'
+import { Link, router } from '@inertiajs/react'
+import { ChevronDown, ChevronUp, Plus } from 'lucide-react'
 import Layout from '~/components/layout'
+import WishStatus from '~/components/wish-status'
 import WishFormDialog from '~/components/wish-form-dialog'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent } from '~/components/ui/card'
 import { Progress } from '~/components/ui/progress'
-import { formatDate, formatEuros, priorityLabels, statusLabels, type WishData } from '~/lib/format'
+import { formatEuros, priorityLabels, statusLabels, type WishData } from '~/lib/format'
 
 export default function Index({
   wishes,
@@ -18,7 +19,10 @@ export default function Index({
 }) {
   const [creating, setCreating] = useState(false)
   const total = wishes.reduce((sum, w) => sum + w.priceCents, 0)
-  const funded = wishes.reduce((sum, w) => sum + w.funding.fundedCents, 0)
+  const allocated = wishes.reduce((sum, w) => sum + w.allocatedCents, 0)
+
+  const move = (wish: WishData, direction: 'up' | 'down') =>
+    router.post(`/wishes/${wish.id}/move`, { direction }, { preserveScroll: true })
 
   return (
     <Layout title="Envies">
@@ -26,7 +30,8 @@ export default function Index({
         <div>
           <h1 className="text-2xl font-semibold">Mes envies</h1>
           <p className="text-sm text-muted-foreground">
-            {formatEuros(funded)} financés sur {formatEuros(total)}
+            {formatEuros(allocated)} alloués sur {formatEuros(total)}. Le rang décide de l'ordre de
+            financement.
           </p>
         </div>
         <Button onClick={() => setCreating(true)}>
@@ -47,46 +52,68 @@ export default function Index({
 
       {wishes.length === 0 && <p className="text-muted-foreground">Aucune envie pour l'instant.</p>}
 
-      <div className="grid gap-3">
-        {wishes.map((wish) => (
-          <Link
-            key={wish.id}
-            href={`/wishes/${wish.id}`}
-            className="rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
-            <Card className="transition-colors hover:bg-accent/50">
-              <CardContent className="grid gap-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="grid gap-2">
-                    <h2 className="font-semibold">{wish.name}</h2>
-                    <div className="flex flex-wrap gap-1.5">
-                      <Badge variant="secondary">{statusLabels[wish.status]}</Badge>
-                      <Badge variant="outline">
-                        Priorité {priorityLabels[wish.priority].toLowerCase()}
-                      </Badge>
-                      {wish.category && <Badge variant="outline">{wish.category}</Badge>}
+      <ol className="grid gap-3">
+        {wishes.map((wish, index) => (
+          <li key={wish.id} className="flex items-stretch gap-2">
+            <div className="flex flex-col items-center justify-center gap-1">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="size-7"
+                aria-label={`Monter ${wish.name}`}
+                disabled={index === 0}
+                onClick={() => move(wish, 'up')}
+              >
+                <ChevronUp />
+              </Button>
+              <span className="text-sm font-semibold tabular-nums" title="Rang de financement">
+                {wish.rank}
+              </span>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="size-7"
+                aria-label={`Descendre ${wish.name}`}
+                disabled={index === wishes.length - 1}
+                onClick={() => move(wish, 'down')}
+              >
+                <ChevronDown />
+              </Button>
+            </div>
+            <Link
+              href={`/wishes/${wish.id}`}
+              className="flex-1 rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              <Card className="h-full transition-colors hover:bg-accent/50">
+                <CardContent className="grid gap-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="grid gap-2">
+                      <h2 className="font-semibold">{wish.name}</h2>
+                      <div className="flex flex-wrap gap-1.5">
+                        <Badge variant="secondary">{statusLabels[wish.status]}</Badge>
+                        <Badge variant="outline">
+                          Priorité {priorityLabels[wish.priority].toLowerCase()}
+                        </Badge>
+                        {wish.category && <Badge variant="outline">{wish.category}</Badge>}
+                      </div>
                     </div>
+                    <strong className="whitespace-nowrap">{formatEuros(wish.priceCents)}</strong>
                   </div>
-                  <strong className="whitespace-nowrap">{formatEuros(wish.priceCents)}</strong>
-                </div>
-                <Progress
-                  value={Math.round(wish.funding.progress * 100)}
-                  aria-label="Progression du financement"
-                />
-                <p className="text-sm text-muted-foreground">
-                  {formatEuros(wish.funding.fundedCents)} réunis
-                  {wish.fundingMode === 'monthly' && wish.funding.estimatedDate
-                    ? ` · achat estimé ${formatDate(wish.funding.estimatedDate)}`
-                    : ''}
-                  {wish.fundingMode === 'deadline' && wish.targetDate
-                    ? ` · avant le ${formatDate(wish.targetDate)}`
-                    : ''}
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
+                  <Progress
+                    value={
+                      wish.priceCents > 0
+                        ? Math.min(100, Math.round((wish.allocatedCents / wish.priceCents) * 100))
+                        : 0
+                    }
+                    aria-label="Part du prix couverte par les allocations"
+                  />
+                  <WishStatus wish={wish} />
+                </CardContent>
+              </Card>
+            </Link>
+          </li>
         ))}
-      </div>
+      </ol>
 
       <WishFormDialog wish={null} open={creating} onOpenChange={setCreating} />
     </Layout>

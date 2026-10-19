@@ -5,6 +5,7 @@ import AllocationDialog from '~/components/allocation-dialog'
 import ConfirmDialog from '~/components/confirm-dialog'
 import Layout from '~/components/layout'
 import WishFormDialog from '~/components/wish-form-dialog'
+import WishStatus from '~/components/wish-status'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent } from '~/components/ui/card'
@@ -17,15 +18,13 @@ import {
   TableHeader,
   TableRow,
 } from '~/components/ui/table'
-import { formatDate, formatEuros, priorityLabels, statusLabels, type WishData } from '~/lib/format'
+import { formatEuros, priorityLabels, statusLabels, type WishData } from '~/lib/format'
 
 interface AllocationData {
   id: number
   fundingSourceId: number
   fundingSourceName: string
-  amountCents: number | null
-  monthlyCents: number | null
-  availableOn: string | null
+  amountCents: number
 }
 
 export default function Show({
@@ -39,7 +38,10 @@ export default function Show({
   const [deleting, setDeleting] = useState(false)
   const [adding, setAdding] = useState(false)
   const [removing, setRemoving] = useState<AllocationData | null>(null)
-  const f = wish.funding
+  const coverage =
+    wish.priceCents > 0
+      ? Math.min(100, Math.round((wish.allocatedCents / wish.priceCents) * 100))
+      : 0
 
   return (
     <Layout title={wish.name}>
@@ -64,6 +66,7 @@ export default function Show({
       <div className="mb-6 flex flex-wrap items-center gap-1.5">
         <Badge variant="secondary">{statusLabels[wish.status]}</Badge>
         <Badge variant="outline">Priorité {priorityLabels[wish.priority].toLowerCase()}</Badge>
+        <Badge variant="outline">Rang {wish.rank}</Badge>
         {wish.category && <Badge variant="outline">{wish.category}</Badge>}
         {wish.url && (
           <a
@@ -81,31 +84,12 @@ export default function Show({
         <CardContent className="grid gap-3">
           <div className="flex justify-between text-sm">
             <span>
-              {formatEuros(f.fundedCents)} sur {formatEuros(wish.priceCents)}
+              {formatEuros(wish.allocatedCents)} alloués sur {formatEuros(wish.priceCents)}
             </span>
-            <strong>{Math.round(f.progress * 100)} %</strong>
+            <strong>{coverage} %</strong>
           </div>
-          <Progress value={Math.round(f.progress * 100)} aria-label="Progression du financement" />
-          {f.covered ? (
-            <p className="font-medium text-success">Entièrement financé.</p>
-          ) : wish.fundingMode === 'monthly' ? (
-            f.estimatedDate ? (
-              <p>
-                Il reste {formatEuros(f.remainingCents)}. Avec {formatEuros(f.monthlyCents)} par
-                mois, achat estimé dans {f.monthsLeft} mois, le {formatDate(f.estimatedDate)}.
-              </p>
-            ) : (
-              <p className="text-muted-foreground">
-                Il reste {formatEuros(f.remainingCents)}. Ajoute une mensualité pour estimer la
-                date.
-              </p>
-            )
-          ) : (
-            <p className="font-medium text-destructive">
-              Il manque {formatEuros(f.remainingCents)}
-              {wish.targetDate ? ` avant le ${formatDate(wish.targetDate)}` : ''}.
-            </p>
-          )}
+          <Progress value={coverage} aria-label="Part du prix couverte par les allocations" />
+          <WishStatus wish={wish} />
         </CardContent>
       </Card>
 
@@ -122,10 +106,8 @@ export default function Show({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Source</TableHead>
-              <TableHead>Déjà alloué</TableHead>
-              <TableHead>Par mois</TableHead>
-              <TableHead>Disponible le</TableHead>
+              <TableHead>Compte</TableHead>
+              <TableHead>Montant prélevé</TableHead>
               <TableHead>
                 <span className="sr-only">Actions</span>
               </TableHead>
@@ -134,7 +116,7 @@ export default function Show({
           <TableBody>
             {wish.allocations.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-muted-foreground">
+                <TableCell colSpan={3} className="text-muted-foreground">
                   Aucune allocation.
                 </TableCell>
               </TableRow>
@@ -142,9 +124,7 @@ export default function Show({
             {wish.allocations.map((a) => (
               <TableRow key={a.id}>
                 <TableCell>{a.fundingSourceName}</TableCell>
-                <TableCell>{a.amountCents ? formatEuros(a.amountCents) : ''}</TableCell>
-                <TableCell>{a.monthlyCents ? formatEuros(a.monthlyCents) : ''}</TableCell>
-                <TableCell>{formatDate(a.availableOn)}</TableCell>
+                <TableCell>{formatEuros(a.amountCents)}</TableCell>
                 <TableCell className="text-right">
                   <Button
                     size="sm"

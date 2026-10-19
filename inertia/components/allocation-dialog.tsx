@@ -14,7 +14,7 @@ import { Input } from '~/components/ui/input'
 import { a11y } from '~/lib/a11y'
 
 interface Props {
-  wish: { id: number; name: string; fundingMode: 'monthly' | 'deadline' }
+  wish: { id: number; name: string }
   sources: { id: number; name: string }[]
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -25,7 +25,7 @@ function AllocationForm({
   sources,
   onDone,
 }: Omit<Props, 'open' | 'onOpenChange'> & { onDone: () => void }) {
-  const form = useForm({ fundingSourceId: '', amount: '', monthly: '', availableOn: '' })
+  const form = useForm({ fundingSourceId: '', amount: '' })
   const { data, errors, setData } = form
 
   const submit = (e: React.FormEvent) => {
@@ -37,17 +37,18 @@ function AllocationForm({
     <form onSubmit={submit} noValidate className="grid gap-4">
       <SelectField
         id="fundingSourceId"
-        label="Source"
+        label="Compte"
         value={data.fundingSourceId}
         onChange={(v) => setData('fundingSourceId', v)}
         options={sources.map((s) => ({ value: String(s.id), label: s.name }))}
-        placeholder="Choisir une source"
+        placeholder="Choisir un compte"
         error={errors.fundingSourceId}
       />
       <Field
         id="amount"
-        label={wish.fundingMode === 'deadline' ? 'Montant (€)' : 'Déjà mis de côté (€)'}
+        label="Montant prélevé (€)"
         error={errors.amount}
+        hint="La somme des allocations doit couvrir le prix de l'envie."
       >
         <Input
           {...a11y('amount', errors.amount)}
@@ -58,27 +59,6 @@ function AllocationForm({
           onChange={(e) => setData('amount', e.target.value)}
         />
       </Field>
-      {wish.fundingMode === 'monthly' ? (
-        <Field id="monthly" label="Mis de côté chaque mois (€)" error={errors.monthly}>
-          <Input
-            {...a11y('monthly', errors.monthly)}
-            type="number"
-            step="0.01"
-            min="0"
-            value={data.monthly}
-            onChange={(e) => setData('monthly', e.target.value)}
-          />
-        </Field>
-      ) : (
-        <Field id="availableOn" label="Disponible le (ex. paie)" error={errors.availableOn}>
-          <Input
-            {...a11y('availableOn', errors.availableOn)}
-            type="date"
-            value={data.availableOn}
-            onChange={(e) => setData('availableOn', e.target.value)}
-          />
-        </Field>
-      )}
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onDone}>
           Annuler
@@ -97,7 +77,9 @@ export default function AllocationDialog({ wish, sources, open, onOpenChange }: 
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Ajouter une allocation</DialogTitle>
-          <DialogDescription>D'où vient l'argent pour « {wish.name} » ?</DialogDescription>
+          <DialogDescription>
+            Sur quel compte « {wish.name} » prélève-t-elle de l'argent ?
+          </DialogDescription>
         </DialogHeader>
         <AllocationForm wish={wish} sources={sources} onDone={() => onOpenChange(false)} />
       </DialogContent>

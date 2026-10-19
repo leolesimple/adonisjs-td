@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react'
-import { Gift, Landmark } from 'lucide-react'
+import { CalendarRange, Gift, Landmark } from 'lucide-react'
 import {
   Sidebar,
   SidebarContent,
@@ -15,7 +15,8 @@ import {
 
 const items = [
   { title: 'Envies', href: '/wishes', icon: Gift },
-  { title: 'Sources', href: '/sources', icon: Landmark },
+  { title: 'Comptes', href: '/sources', icon: Landmark },
+  { title: 'Projection', href: '/projection', icon: CalendarRange },
 ]
 
 export default function AppSidebar() {

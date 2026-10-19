@@ -16,18 +16,19 @@ export const statusLabels = {
 } as const
 export const sourceTypeLabels = {
   savings: 'Épargne',
-  checking: 'Compte chèque',
+  checking: 'Compte courant',
   income: 'Revenu',
 } as const
 
-export interface Funding {
-  fundedCents: number
-  monthlyCents: number
-  remainingCents: number
-  progress: number
-  covered: boolean
-  monthsLeft: number | null
-  estimatedDate: string | null
+// Résultat de projection d'une envie (calculé côté serveur, app/services/projection.ts)
+export interface WishProjection {
+  wishId: number
+  state: 'ready' | 'planned' | 'unallocated' | 'beyond'
+  allocatedCents: number
+  missingCents: number
+  month: number | null
+  date: string | null
+  onTime: boolean | null
 }
 
 export interface WishData {
@@ -36,11 +37,13 @@ export interface WishData {
   priceCents: number
   category: string | null
   priority: keyof typeof priorityLabels
+  rank: number
   url: string | null
   imageUrl: string | null
   notes: string | null
   status: keyof typeof statusLabels
-  fundingMode: 'monthly' | 'deadline'
   targetDate: string | null
-  funding: Funding
+  allocatedCents: number
+  // null pour une envie achetée ou abandonnée : elle sort de la projection
+  projection: WishProjection | null
 }
