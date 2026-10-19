@@ -1,4 +1,7 @@
+import { indexPages } from '@adonisjs/inertia'
+import { indexEntities } from '@adonisjs/core/generators'
 import { defineConfig } from '@adonisjs/core/app'
+import { generateRegistry } from '@tuyau/core/hooks'
 
 export default defineConfig({
   /*
@@ -11,10 +14,7 @@ export default defineConfig({
   | during upgrade.
   |
   */
-  experimental: {
-    mergeMultipartFieldsAndFiles: true,
-    shutdownInReverseOrder: true,
-  },
+  experimental: {},
 
   /*
   |--------------------------------------------------------------------------
@@ -25,7 +25,12 @@ export default defineConfig({
   | will be scanned automatically from the "./commands" directory.
   |
   */
-  commands: [() => import('@adonisjs/core/commands'), () => import('@adonisjs/lucid/commands')],
+  commands: [
+    () => import('@adonisjs/core/commands'),
+    () => import('@adonisjs/lucid/commands'),
+    () => import('@adonisjs/session/commands'),
+    () => import('@adonisjs/inertia/commands'),
+  ],
 
   /*
   |--------------------------------------------------------------------------
@@ -49,9 +54,10 @@ export default defineConfig({
     () => import('@adonisjs/vite/vite_provider'),
     () => import('@adonisjs/shield/shield_provider'),
     () => import('@adonisjs/static/static_provider'),
+    () => import('@adonisjs/lucid/database_provider'),
     () => import('@adonisjs/cors/cors_provider'),
     () => import('@adonisjs/inertia/inertia_provider'),
-    () => import('@adonisjs/lucid/database_provider'),
+    () => import('#providers/api_provider'),
   ],
 
   /*
@@ -80,14 +86,19 @@ export default defineConfig({
   tests: {
     suites: [
       {
-        files: ['tests/unit/**/*.spec(.ts|.js)'],
+        files: ['tests/unit/**/*.spec.{ts,js}'],
         name: 'unit',
         timeout: 2000,
       },
       {
-        files: ['tests/functional/**/*.spec(.ts|.js)'],
+        files: ['tests/functional/**/*.spec.{ts,js}'],
         name: 'functional',
         timeout: 30000,
+      },
+      {
+        files: ['tests/browser/**/*.spec.{ts,js}'],
+        name: 'browser',
+        timeout: 300000,
       },
     ],
     forceExit: false,
@@ -113,8 +124,14 @@ export default defineConfig({
     },
   ],
 
-  assetsBundler: false,
   hooks: {
-    onBuildStarting: [() => import('@adonisjs/vite/build_hook')],
+    init: [
+      indexEntities({
+        transformers: { enabled: true, withSharedProps: true },
+      }),
+      indexPages({ framework: 'react' }),
+      generateRegistry(),
+    ],
+    buildStarting: [() => import('@adonisjs/vite/build_hook')],
   },
 })
