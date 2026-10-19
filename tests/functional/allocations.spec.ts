@@ -5,51 +5,35 @@ import FundingSource from '#models/funding_source'
 import Allocation from '#models/allocation'
 
 const makeWish = () =>
-  Wish.create({
-    name: 'Casque',
-    priceCents: 10000,
-    priority: 'low',
-    status: 'wished',
-    fundingMode: 'monthly',
-  })
+  Wish.create({ name: 'Casque', priceCents: 10000, priority: 'low', status: 'wished', rank: 1 })
 
 test.group('Allocations', (group) => {
   group.each.setup(() => testUtils.db().truncate())
 
-  test('store adds a one-off amount', async ({ client, assert }) => {
+  test('store reserves an amount of an account for the wish', async ({ client, assert }) => {
     const wish = await makeWish()
     const source = await FundingSource.create({ name: 'Livret A', type: 'savings' })
     const response = await client
       .post(`/wishes/${wish.id}/allocations`)
-      .form({ fundingSourceId: source.id, amount: 143, availableOn: '2026-11-28' })
+      .form({ fundingSourceId: source.id, amount: 143 })
       .redirects(0)
 
     response.assertStatus(302)
     const allocation = await Allocation.firstOrFail()
     assert.equal(allocation.amountCents, 14300)
-    assert.isNull(allocation.monthlyCents)
-    assert.equal(allocation.availableOn?.toISODate(), '2026-11-28')
+    assert.equal(allocation.fundingSourceId, source.id)
   })
 
-  test('store adds a monthly amount', async ({ client, assert }) => {
-    const wish = await makeWish()
-    const source = await FundingSource.create({ name: 'CCHQ', type: 'checking' })
-    await client
-      .post(`/wishes/${wish.id}/allocations`)
-      .form({ fundingSourceId: source.id, monthly: 50 })
-      .redirects(0)
-
-    const allocation = await Allocation.firstOrFail()
-    assert.equal(allocation.monthlyCents, 5000)
-    assert.isNull(allocation.amountCents)
-  })
-
-  test('store requires at least one amount', async ({ client, assert }) => {
+  test('store requires a positive amount', async ({ client, assert }) => {
     const wish = await makeWish()
     const source = await FundingSource.create({ name: 'CCHQ', type: 'checking' })
     await client
       .post(`/wishes/${wish.id}/allocations`)
       .form({ fundingSourceId: source.id })
+      .redirects(0)
+    await client
+      .post(`/wishes/${wish.id}/allocations`)
+      .form({ fundingSourceId: source.id, amount: -3 })
       .redirects(0)
 
     assert.isNull(await Allocation.first())
