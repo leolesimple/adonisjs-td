@@ -15,7 +15,7 @@ const AllocationsController = () => import('#controllers/allocations_controller'
 
 router.get('/', ({ response }) => response.redirect().toRoute('wishes.index'))
 
-router.resource('wishes', WishesController).params({ wishes: 'id' })
+router.resource('wishes', WishesController).except(['create', 'edit']).params({ wishes: 'id' })
 router
   .resource('sources', FundingSourcesController)
   .only(['index', 'store', 'update', 'destroy'])

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Label } from '~/components/ui/label'
 
 interface FieldProps {
   id: string
@@ -8,19 +9,17 @@ interface FieldProps {
   children: ReactNode
 }
 
-// Un champ de formulaire Bootstrap : label, contrôle et message d'erreur VineJS
+// Un champ de formulaire : label, contrôle et message d'erreur VineJS
 export default function Field({ id, label, error, hint, children }: FieldProps) {
   return (
-    <div className="form-field">
-      <label className="form-label" htmlFor={id}>
-        {label}
-      </label>
+    <div className="grid gap-2">
+      <Label htmlFor={id}>{label}</Label>
       {children}
-      {hint && !error && <small className="text-muted">{hint}</small>}
+      {hint && !error && <p className="text-sm text-muted-foreground">{hint}</p>}
       {error && (
-        <small id={`${id}-error`} className="text-danger" role="alert">
+        <p id={`${id}-error`} role="alert" className="text-sm text-destructive">
           {error}
-        </small>
+        </p>
       )}
     </div>
   )

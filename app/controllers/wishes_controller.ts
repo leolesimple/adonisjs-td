@@ -47,10 +47,6 @@ export default class WishesController {
     return inertia.render('wishes/index', { wishes: wishes.map(serialize), status })
   }
 
-  async create({ inertia }: HttpContext) {
-    return inertia.render('wishes/form', { wish: null })
-  }
-
   async store({ request, response }: HttpContext) {
     const payload = await request.validateUsing(wishValidator)
     const wish = await Wish.create(toColumns(payload))
@@ -77,11 +73,6 @@ export default class WishesController {
       },
       sources: sources.map((s) => ({ id: s.id, name: s.name, type: s.type })),
     })
-  }
-
-  async edit({ params, inertia }: HttpContext) {
-    const wish = await Wish.query().where('id', params.id).preload('allocations').firstOrFail()
-    return inertia.render('wishes/form', { wish: serialize(wish) })
   }
 
   async update({ params, request, response }: HttpContext) {

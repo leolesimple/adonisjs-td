@@ -1,7 +1,22 @@
-import { Link, router, useForm } from '@inertiajs/react'
-import Field from '~/components/field'
+import { useState } from 'react'
+import { Link, router } from '@inertiajs/react'
+import { ArrowLeft, Pencil, Plus, Trash2 } from 'lucide-react'
+import AllocationDialog from '~/components/allocation-dialog'
+import ConfirmDialog from '~/components/confirm-dialog'
 import Layout from '~/components/layout'
-import { a11y } from '~/lib/a11y'
+import WishFormDialog from '~/components/wish-form-dialog'
+import { Badge } from '~/components/ui/badge'
+import { Button } from '~/components/ui/button'
+import { Card, CardContent } from '~/components/ui/card'
+import { Progress } from '~/components/ui/progress'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '~/components/ui/table'
 import { formatDate, formatEuros, priorityLabels, statusLabels, type WishData } from '~/lib/format'
 
 interface AllocationData {
@@ -20,208 +35,149 @@ export default function Show({
   wish: WishData & { allocations: AllocationData[] }
   sources: { id: number; name: string }[]
 }) {
-  const form = useForm({ fundingSourceId: '', amount: '', monthly: '', availableOn: '' })
-  const { data, errors, setData } = form
+  const [editing, setEditing] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [adding, setAdding] = useState(false)
+  const [removing, setRemoving] = useState<AllocationData | null>(null)
   const f = wish.funding
-
-  const addAllocation = (e: React.FormEvent) => {
-    e.preventDefault()
-    form.post(`/wishes/${wish.id}/allocations`, { onSuccess: () => form.reset() })
-  }
-
-  const remove = () => {
-    if (confirm(`Supprimer « ${wish.name} » ?`)) router.delete(`/wishes/${wish.id}`)
-  }
 
   return (
     <Layout title={wish.name}>
-      <div className="hstack justify-content-between mb-3">
-        <h1 className="h3 mb-0">{wish.name}</h1>
-        <div className="hstack gap-2">
-          <Link className="btn btn-subtle theme-secondary" href={`/wishes/${wish.id}/edit`}>
-            Modifier
-          </Link>
-          <button className="btn btn-subtle theme-danger" onClick={remove}>
-            Supprimer
-          </button>
+      <Button asChild variant="ghost" size="sm" className="mb-4 -ml-2">
+        <Link href="/wishes">
+          <ArrowLeft /> Toutes les envies
+        </Link>
+      </Button>
+
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold">{wish.name}</h1>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setEditing(true)}>
+            <Pencil /> Modifier
+          </Button>
+          <Button variant="outline" className="text-destructive" onClick={() => setDeleting(true)}>
+            <Trash2 /> Supprimer
+          </Button>
         </div>
       </div>
 
-      <div className="mb-4">
-        <span className="badge badge-subtle theme-secondary me-1">{statusLabels[wish.status]}</span>
-        <span className="badge badge-subtle theme-info me-1">
-          Priorité {priorityLabels[wish.priority].toLowerCase()}
-        </span>
-        {wish.category && (
-          <span className="badge badge-outline theme-secondary">{wish.category}</span>
-        )}
+      <div className="mb-6 flex flex-wrap items-center gap-1.5">
+        <Badge variant="secondary">{statusLabels[wish.status]}</Badge>
+        <Badge variant="outline">Priorité {priorityLabels[wish.priority].toLowerCase()}</Badge>
+        {wish.category && <Badge variant="outline">{wish.category}</Badge>}
         {wish.url && (
-          <a className="ms-2" href={wish.url} target="_blank" rel="noreferrer">
+          <a
+            className="ml-2 text-sm underline underline-offset-4"
+            href={wish.url}
+            target="_blank"
+            rel="noreferrer"
+          >
             Voir le produit
           </a>
         )}
       </div>
 
-      <div className="card mb-4">
-        <div className="card-body">
-          <div className="hstack justify-content-between mb-2">
+      <Card className="mb-6">
+        <CardContent className="grid gap-3">
+          <div className="flex justify-between text-sm">
             <span>
               {formatEuros(f.fundedCents)} sur {formatEuros(wish.priceCents)}
             </span>
             <strong>{Math.round(f.progress * 100)} %</strong>
           </div>
-          <div
-            className="progress mb-3"
-            role="progressbar"
-            aria-label="Progression du financement"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={Math.round(wish.funding.progress * 100)}
-          >
-            <div className="progress-bar" style={{ width: `${f.progress * 100}%` }} />
-          </div>
+          <Progress value={Math.round(f.progress * 100)} aria-label="Progression du financement" />
           {f.covered ? (
-            <div className="alert theme-success mb-0">Entièrement financé.</div>
+            <p className="font-medium text-success">Entièrement financé.</p>
           ) : wish.fundingMode === 'monthly' ? (
             f.estimatedDate ? (
-              <p className="mb-0">
+              <p>
                 Il reste {formatEuros(f.remainingCents)}. Avec {formatEuros(f.monthlyCents)} par
                 mois, achat estimé dans {f.monthsLeft} mois, le {formatDate(f.estimatedDate)}.
               </p>
             ) : (
-              <p className="mb-0 text-muted">
+              <p className="text-muted-foreground">
                 Il reste {formatEuros(f.remainingCents)}. Ajoute une mensualité pour estimer la
                 date.
               </p>
             )
           ) : (
-            <div className="alert theme-warning mb-0">
+            <p className="font-medium text-destructive">
               Il manque {formatEuros(f.remainingCents)}
               {wish.targetDate ? ` avant le ${formatDate(wish.targetDate)}` : ''}.
-            </div>
+            </p>
           )}
-        </div>
+        </CardContent>
+      </Card>
+
+      {wish.notes && <p className="mb-6">{wish.notes}</p>}
+
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Financement</h2>
+        <Button size="sm" onClick={() => setAdding(true)}>
+          <Plus /> Ajouter
+        </Button>
       </div>
 
-      {wish.notes && <p className="mb-4">{wish.notes}</p>}
-
-      <h2 className="h5 mb-3">Financement</h2>
-      <div className="table-responsive mb-4">
-        <table className="table">
-          <thead>
-            <tr>
-              <th scope="col">Source</th>
-              <th scope="col">Déjà alloué</th>
-              <th scope="col">Par mois</th>
-              <th scope="col">Disponible le</th>
-              <th scope="col">
-                <span className="visually-hidden">Actions</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
+      <Card className="py-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Source</TableHead>
+              <TableHead>Déjà alloué</TableHead>
+              <TableHead>Par mois</TableHead>
+              <TableHead>Disponible le</TableHead>
+              <TableHead>
+                <span className="sr-only">Actions</span>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {wish.allocations.length === 0 && (
-              <tr>
-                <td colSpan={5} className="text-muted">
+              <TableRow>
+                <TableCell colSpan={5} className="text-muted-foreground">
                   Aucune allocation.
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )}
             {wish.allocations.map((a) => (
-              <tr key={a.id}>
-                <td>{a.fundingSourceName}</td>
-                <td>{a.amountCents ? formatEuros(a.amountCents) : ''}</td>
-                <td>{a.monthlyCents ? formatEuros(a.monthlyCents) : ''}</td>
-                <td>{formatDate(a.availableOn)}</td>
-                <td className="text-end">
-                  <button
-                    className="btn btn-sm btn-subtle theme-danger"
-                    onClick={() => router.delete(`/allocations/${a.id}`)}
+              <TableRow key={a.id}>
+                <TableCell>{a.fundingSourceName}</TableCell>
+                <TableCell>{a.amountCents ? formatEuros(a.amountCents) : ''}</TableCell>
+                <TableCell>{a.monthlyCents ? formatEuros(a.monthlyCents) : ''}</TableCell>
+                <TableCell>{formatDate(a.availableOn)}</TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-destructive"
+                    onClick={() => setRemoving(a)}
                   >
                     Retirer
-                  </button>
-                </td>
-              </tr>
+                  </Button>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </Card>
 
-      <form onSubmit={addAllocation} className="card" noValidate>
-        <div className="card-body">
-          <h3 className="h6 mb-3">Ajouter une allocation</h3>
-          {sources.length === 0 ? (
-            <p className="text-muted mb-0">
-              Crée d'abord une <Link href="/sources">source de financement</Link>.
-            </p>
-          ) : (
-            <div className="vstack gap-3">
-              <Field id="fundingSourceId" label="Source" error={errors.fundingSourceId}>
-                <select
-                  {...a11y('fundingSourceId', errors.fundingSourceId)}
-                  className="form-control form-control-caret"
-                  value={data.fundingSourceId}
-                  onChange={(e) => setData('fundingSourceId', e.target.value)}
-                >
-                  <option value="">Choisir…</option>
-                  {sources.map((source) => (
-                    <option key={source.id} value={source.id}>
-                      {source.name}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field
-                id="amount"
-                label={wish.fundingMode === 'deadline' ? 'Montant (€)' : 'Déjà mis de côté (€)'}
-                error={errors.amount}
-              >
-                <input
-                  {...a11y('amount', errors.amount)}
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  className="form-control"
-                  value={data.amount}
-                  onChange={(e) => setData('amount', e.target.value)}
-                />
-              </Field>
-              {wish.fundingMode === 'monthly' ? (
-                <Field id="monthly" label="Mis de côté chaque mois (€)" error={errors.monthly}>
-                  <input
-                    {...a11y('monthly', errors.monthly)}
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    className="form-control"
-                    value={data.monthly}
-                    onChange={(e) => setData('monthly', e.target.value)}
-                  />
-                </Field>
-              ) : (
-                <Field id="availableOn" label="Disponible le (ex. paie)" error={errors.availableOn}>
-                  <input
-                    {...a11y('availableOn', errors.availableOn)}
-                    type="date"
-                    className="form-control"
-                    value={data.availableOn}
-                    onChange={(e) => setData('availableOn', e.target.value)}
-                  />
-                </Field>
-              )}
-              <div>
-                <button
-                  type="submit"
-                  className="btn btn-solid theme-primary"
-                  disabled={form.processing}
-                >
-                  Ajouter
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </form>
+      <WishFormDialog wish={wish} open={editing} onOpenChange={setEditing} />
+      <AllocationDialog wish={wish} sources={sources} open={adding} onOpenChange={setAdding} />
+      <ConfirmDialog
+        open={deleting}
+        onOpenChange={setDeleting}
+        title={`Supprimer « ${wish.name} » ?`}
+        description="L'envie et ses allocations seront supprimées. Cette action est définitive."
+        onConfirm={() => router.delete(`/wishes/${wish.id}`)}
+      />
+      <ConfirmDialog
+        open={removing !== null}
+        onOpenChange={(open) => !open && setRemoving(null)}
+        title="Retirer cette allocation ?"
+        description={`L'argent de « ${removing?.fundingSourceName ?? ''} » ne sera plus compté pour cette envie.`}
+        confirmLabel="Retirer"
+        onConfirm={() => removing && router.delete(`/allocations/${removing.id}`)}
+      />
     </Layout>
   )
 }

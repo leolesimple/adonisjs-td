@@ -1,161 +1,110 @@
 import { useState } from 'react'
-import { router, useForm } from '@inertiajs/react'
-import Field from '~/components/field'
+import { router } from '@inertiajs/react'
+import { Pencil, Plus, Trash2 } from 'lucide-react'
+import ConfirmDialog from '~/components/confirm-dialog'
 import Layout from '~/components/layout'
-import { a11y } from '~/lib/a11y'
+import SourceFormDialog, { type SourceData } from '~/components/source-form-dialog'
+import { Button } from '~/components/ui/button'
+import { Card } from '~/components/ui/card'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '~/components/ui/table'
 import { formatEuros, sourceTypeLabels } from '~/lib/format'
 
-type SourceType = keyof typeof sourceTypeLabels
-
-interface SourceData {
-  id: number
-  name: string
-  type: SourceType
-  notes: string | null
-  monthlyCents: number
-  allocatedCents: number
-}
-
-// Formulaire partagé entre la création et la modification d'une source
-function SourceForm({ source, onDone }: { source?: SourceData; onDone?: () => void }) {
-  const form = useForm({
-    name: source?.name ?? '',
-    type: source?.type ?? ('savings' as SourceType),
-    notes: source?.notes ?? '',
-  })
-  const { data, errors, setData } = form
-  const prefix = source ? `source-${source.id}` : 'new-source'
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (source) form.put(`/sources/${source.id}`, { onSuccess: onDone })
-    else form.post('/sources', { onSuccess: () => form.reset() })
-  }
-
-  return (
-    <form onSubmit={submit} className="vstack gap-3" noValidate>
-      <Field id={`${prefix}-name`} label="Nom" error={errors.name}>
-        <input
-          {...a11y(`${prefix}-name`, errors.name)}
-          className="form-control"
-          value={data.name}
-          onChange={(e) => setData('name', e.target.value)}
-        />
-      </Field>
-      <Field id={`${prefix}-type`} label="Type" error={errors.type}>
-        <select
-          {...a11y(`${prefix}-type`, errors.type)}
-          className="form-control form-control-caret"
-          value={data.type}
-          onChange={(e) => setData('type', e.target.value as SourceType)}
-        >
-          {Object.entries(sourceTypeLabels).map(([key, label]) => (
-            <option key={key} value={key}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </Field>
-      <Field id={`${prefix}-notes`} label="Notes" error={errors.notes}>
-        <input
-          {...a11y(`${prefix}-notes`, errors.notes)}
-          className="form-control"
-          value={data.notes}
-          onChange={(e) => setData('notes', e.target.value)}
-        />
-      </Field>
-      <div className="hstack gap-2">
-        <button type="submit" className="btn btn-solid theme-primary" disabled={form.processing}>
-          {source ? 'Enregistrer' : 'Ajouter'}
-        </button>
-        {onDone && (
-          <button type="button" className="btn btn-subtle theme-secondary" onClick={onDone}>
-            Annuler
-          </button>
-        )}
-      </div>
-    </form>
-  )
-}
-
 export default function Index({ sources }: { sources: SourceData[] }) {
-  const [editingId, setEditingId] = useState<number | null>(null)
-
-  const remove = (source: SourceData) => {
-    if (confirm(`Supprimer « ${source.name} » et ses allocations ?`)) {
-      router.delete(`/sources/${source.id}`)
-    }
-  }
+  const [creating, setCreating] = useState(false)
+  const [editing, setEditing] = useState<SourceData | null>(null)
+  const [deleting, setDeleting] = useState<SourceData | null>(null)
 
   return (
-    <Layout title="Sources de financement">
-      <h1 className="h3 mb-1">Sources de financement</h1>
-      <p className="text-muted mb-4">D'où vient l'argent : Livret A, compte chèque, paie…</p>
-
-      <div className="table-responsive mb-4">
-        <table className="table">
-          <thead>
-            <tr>
-              <th scope="col">Nom</th>
-              <th scope="col">Type</th>
-              <th scope="col">Alloué (ponctuel)</th>
-              <th scope="col">Alloué par mois</th>
-              <th scope="col">
-                <span className="visually-hidden">Actions</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {sources.length === 0 && (
-              <tr>
-                <td colSpan={5} className="text-muted">
-                  Aucune source pour l'instant.
-                </td>
-              </tr>
-            )}
-            {sources.map((source) =>
-              editingId === source.id ? (
-                <tr key={source.id}>
-                  <td colSpan={5}>
-                    <SourceForm source={source} onDone={() => setEditingId(null)} />
-                  </td>
-                </tr>
-              ) : (
-                <tr key={source.id}>
-                  <td>
-                    {source.name}
-                    {source.notes && <small className="d-block text-muted">{source.notes}</small>}
-                  </td>
-                  <td>{sourceTypeLabels[source.type]}</td>
-                  <td>{formatEuros(source.allocatedCents)}</td>
-                  <td>{formatEuros(source.monthlyCents)}</td>
-                  <td className="text-end text-nowrap">
-                    <button
-                      className="btn btn-sm btn-subtle theme-secondary me-1"
-                      onClick={() => setEditingId(source.id)}
-                    >
-                      Modifier
-                    </button>
-                    <button
-                      className="btn btn-sm btn-subtle theme-danger"
-                      onClick={() => remove(source)}
-                    >
-                      Supprimer
-                    </button>
-                  </td>
-                </tr>
-              )
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="card" style={{ maxWidth: 520 }}>
-        <div className="card-body">
-          <h2 className="h6 mb-3">Nouvelle source</h2>
-          <SourceForm />
+    <Layout title="Sources">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">Sources de financement</h1>
+          <p className="text-sm text-muted-foreground">
+            D'où vient l'argent : Livret A, compte chèque, paie…
+          </p>
         </div>
+        <Button onClick={() => setCreating(true)}>
+          <Plus /> Nouvelle source
+        </Button>
       </div>
+
+      <Card className="py-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Nom</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Alloué (ponctuel)</TableHead>
+              <TableHead>Alloué par mois</TableHead>
+              <TableHead>
+                <span className="sr-only">Actions</span>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {sources.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} className="text-muted-foreground">
+                  Aucune source pour l'instant.
+                </TableCell>
+              </TableRow>
+            )}
+            {sources.map((source) => (
+              <TableRow key={source.id}>
+                <TableCell>
+                  {source.name}
+                  {source.notes && (
+                    <span className="block text-sm text-muted-foreground">{source.notes}</span>
+                  )}
+                </TableCell>
+                <TableCell>{sourceTypeLabels[source.type]}</TableCell>
+                <TableCell>{formatEuros(source.allocatedCents)}</TableCell>
+                <TableCell>{formatEuros(source.monthlyCents)}</TableCell>
+                <TableCell className="text-right whitespace-nowrap">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    aria-label={`Modifier ${source.name}`}
+                    onClick={() => setEditing(source)}
+                  >
+                    <Pencil />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="text-destructive"
+                    aria-label={`Supprimer ${source.name}`}
+                    onClick={() => setDeleting(source)}
+                  >
+                    <Trash2 />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Card>
+
+      <SourceFormDialog source={null} open={creating} onOpenChange={setCreating} />
+      <SourceFormDialog
+        source={editing}
+        open={editing !== null}
+        onOpenChange={(open) => !open && setEditing(null)}
+      />
+      <ConfirmDialog
+        open={deleting !== null}
+        onOpenChange={(open) => !open && setDeleting(null)}
+        title={`Supprimer « ${deleting?.name ?? ''} » ?`}
+        description="Ses allocations seront supprimées aussi. Cette action est définitive."
+        onConfirm={() => deleting && router.delete(`/sources/${deleting.id}`)}
+      />
     </Layout>
   )
 }

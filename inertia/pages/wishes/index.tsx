@@ -1,5 +1,12 @@
+import { useState } from 'react'
 import { Link } from '@inertiajs/react'
+import { Plus } from 'lucide-react'
 import Layout from '~/components/layout'
+import WishFormDialog from '~/components/wish-form-dialog'
+import { Badge } from '~/components/ui/badge'
+import { Button } from '~/components/ui/button'
+import { Card, CardContent } from '~/components/ui/card'
+import { Progress } from '~/components/ui/progress'
 import { formatDate, formatEuros, priorityLabels, statusLabels, type WishData } from '~/lib/format'
 
 export default function Index({
@@ -9,85 +16,79 @@ export default function Index({
   wishes: WishData[]
   status: keyof typeof statusLabels | null
 }) {
+  const [creating, setCreating] = useState(false)
   const total = wishes.reduce((sum, w) => sum + w.priceCents, 0)
   const funded = wishes.reduce((sum, w) => sum + w.funding.fundedCents, 0)
 
   return (
     <Layout title="Envies">
-      <div className="hstack justify-content-between mb-4">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="h3 mb-1">Mes envies</h1>
-          <p className="text-muted mb-0">
+          <h1 className="text-2xl font-semibold">Mes envies</h1>
+          <p className="text-sm text-muted-foreground">
             {formatEuros(funded)} financés sur {formatEuros(total)}
           </p>
         </div>
-        <Link className="btn btn-solid theme-primary" href="/wishes/create">
-          Nouvelle envie
-        </Link>
+        <Button onClick={() => setCreating(true)}>
+          <Plus /> Nouvelle envie
+        </Button>
       </div>
 
-      <div className="nav nav-pills mb-4">
-        <Link className={`nav-link${!status ? ' active' : ''}`} href="/wishes">
-          Toutes
-        </Link>
+      <nav aria-label="Filtrer par statut" className="mb-6 flex flex-wrap gap-2">
+        <Button asChild size="sm" variant={status ? 'outline' : 'default'}>
+          <Link href="/wishes">Toutes</Link>
+        </Button>
         {Object.entries(statusLabels).map(([key, label]) => (
-          <Link
-            key={key}
-            className={`nav-link${status === key ? ' active' : ''}`}
-            href={`/wishes?status=${key}`}
-          >
-            {label}
-          </Link>
+          <Button key={key} asChild size="sm" variant={status === key ? 'default' : 'outline'}>
+            <Link href={`/wishes?status=${key}`}>{label}</Link>
+          </Button>
         ))}
-      </div>
+      </nav>
 
-      {wishes.length === 0 && <p className="text-muted">Aucune envie pour l'instant.</p>}
+      {wishes.length === 0 && <p className="text-muted-foreground">Aucune envie pour l'instant.</p>}
 
-      <div className="vstack gap-3">
+      <div className="grid gap-3">
         {wishes.map((wish) => (
-          <Link key={wish.id} href={`/wishes/${wish.id}`} className="card text-decoration-none">
-            <div className="card-body">
-              <div className="hstack justify-content-between mb-2">
-                <div>
-                  <h2 className="h5 mb-1">{wish.name}</h2>
-                  <span className="badge badge-subtle theme-secondary me-1">
-                    {statusLabels[wish.status]}
-                  </span>
-                  <span className="badge badge-subtle theme-info me-1">
-                    Priorité {priorityLabels[wish.priority].toLowerCase()}
-                  </span>
-                  {wish.category && (
-                    <span className="badge badge-outline theme-secondary">{wish.category}</span>
-                  )}
+          <Link
+            key={wish.id}
+            href={`/wishes/${wish.id}`}
+            className="rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <Card className="transition-colors hover:bg-accent/50">
+              <CardContent className="grid gap-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="grid gap-2">
+                    <h2 className="font-semibold">{wish.name}</h2>
+                    <div className="flex flex-wrap gap-1.5">
+                      <Badge variant="secondary">{statusLabels[wish.status]}</Badge>
+                      <Badge variant="outline">
+                        Priorité {priorityLabels[wish.priority].toLowerCase()}
+                      </Badge>
+                      {wish.category && <Badge variant="outline">{wish.category}</Badge>}
+                    </div>
+                  </div>
+                  <strong className="whitespace-nowrap">{formatEuros(wish.priceCents)}</strong>
                 </div>
-                <strong>{formatEuros(wish.priceCents)}</strong>
-              </div>
-              <div
-                className="progress mb-2"
-                role="progressbar"
-                aria-label="Progression du financement"
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={Math.round(wish.funding.progress * 100)}
-              >
-                <div
-                  className="progress-bar"
-                  style={{ width: `${wish.funding.progress * 100}%` }}
+                <Progress
+                  value={Math.round(wish.funding.progress * 100)}
+                  aria-label="Progression du financement"
                 />
-              </div>
-              <small className="text-muted">
-                {formatEuros(wish.funding.fundedCents)} réunis
-                {wish.fundingMode === 'monthly' && wish.funding.estimatedDate
-                  ? ` · achat estimé ${formatDate(wish.funding.estimatedDate)}`
-                  : ''}
-                {wish.fundingMode === 'deadline' && wish.targetDate
-                  ? ` · avant le ${formatDate(wish.targetDate)}`
-                  : ''}
-              </small>
-            </div>
+                <p className="text-sm text-muted-foreground">
+                  {formatEuros(wish.funding.fundedCents)} réunis
+                  {wish.fundingMode === 'monthly' && wish.funding.estimatedDate
+                    ? ` · achat estimé ${formatDate(wish.funding.estimatedDate)}`
+                    : ''}
+                  {wish.fundingMode === 'deadline' && wish.targetDate
+                    ? ` · avant le ${formatDate(wish.targetDate)}`
+                    : ''}
+                </p>
+              </CardContent>
+            </Card>
           </Link>
         ))}
       </div>
+
+      <WishFormDialog wish={null} open={creating} onOpenChange={setCreating} />
     </Layout>
   )
 }
