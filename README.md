@@ -18,6 +18,7 @@ Projet réalisé pour le TD AdonisJS (BUT MMI 3).
   - **Mensualités** : l'appli calcule la date d'achat estimée.
     `mois restants = reste à financer / somme des mensualités`, arrondi au mois supérieur.
   - **Échéance** : on fixe une date à tenir, l'appli affiche le total réuni et ce qu'il reste à couvrir.
+- La création, la modification et la suppression passent par des **modales**, la navigation par une **sidebar** rétractable.
 - Les montants sont stockés en **centimes** (entiers) pour éviter les erreurs d'arrondi.
 
 ## Technologies
@@ -26,7 +27,7 @@ Projet réalisé pour le TD AdonisJS (BUT MMI 3).
 - [Lucid ORM](https://lucid.adonisjs.com) avec SQLite
 - [VineJS](https://vinejs.dev) pour la validation (messages en français)
 - [Inertia.js](https://inertiajs.com) avec React 19 et rendu côté serveur
-- [Bootstrap 6 alpha](https://getbootstrap.com/docs/6.0/) via Sass
+- [Tailwind CSS v4](https://tailwindcss.com) et [shadcn/ui](https://ui.shadcn.com) (sidebar, modales)
 - [Japa](https://japa.dev) pour les tests
 
 ## Installation
@@ -48,7 +49,7 @@ Le seeder crée trois sources (Livret A, CCHQ, paie de novembre) et trois envies
 une dans chaque situation (mensualités, échéance, sans financement).
 
 > En mode développement, le premier chargement après le démarrage peut s'afficher sans style
-> le temps que Vite compile le Sass. Un rechargement règle ça.
+> le temps que Vite compile le CSS. Un rechargement règle ça.
 
 ## Scripts utiles
 
@@ -72,8 +73,9 @@ database/
   migrations/    schéma des 3 tables
   seeders/       données de démonstration
 inertia/
-  pages/         pages React (wishes/*, sources/index)
-  components/    layout, champ de formulaire
+  pages/         pages React (wishes/index, wishes/show, sources/index)
+  components/    sidebar, layout, modales (envie, allocation, source, confirmation), champs
+  components/ui/ composants shadcn/ui
 start/routes.ts  routes
 tests/           unitaires (calcul, clés étrangères) et fonctionnels (CRUD)
 ```
