@@ -5,7 +5,6 @@ import Allocation from '#models/allocation'
 
 export type WishPriority = 'low' | 'medium' | 'high'
 export type WishStatus = 'wished' | 'funding' | 'bought' | 'dropped'
-export type FundingMode = 'monthly' | 'deadline'
 
 export default class Wish extends BaseModel {
   @column({ isPrimary: true })
@@ -35,8 +34,9 @@ export default class Wish extends BaseModel {
   @column()
   declare status: WishStatus
 
-  @column({ columnName: 'funding_mode' })
-  declare fundingMode: FundingMode
+  // Ordre de service : 1 = financée en premier
+  @column()
+  declare rank: number
 
   @column.date()
   declare targetDate: DateTime | null

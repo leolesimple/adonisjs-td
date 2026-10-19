@@ -18,6 +18,20 @@ export default class FundingSource extends BaseModel {
   @column()
   declare notes: string | null
 
+  // Solde actuel du compte
+  @column({ columnName: 'balance_cents' })
+  declare balanceCents: number
+
+  // Compte courant : paie mensuelle, budget mensuel consacré aux envies, jour de paie
+  @column({ columnName: 'monthly_income_cents' })
+  declare monthlyIncomeCents: number | null
+
+  @column({ columnName: 'monthly_budget_cents' })
+  declare monthlyBudgetCents: number | null
+
+  @column({ columnName: 'pay_day' })
+  declare payDay: number | null
+
   @hasMany(() => Allocation)
   declare allocations: HasMany<typeof Allocation>
 

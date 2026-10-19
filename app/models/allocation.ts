@@ -14,14 +14,9 @@ export default class Allocation extends BaseModel {
   @column({ columnName: 'funding_source_id' })
   declare fundingSourceId: number
 
+  // Montant que l'envie prélève sur cette source
   @column({ columnName: 'amount_cents' })
-  declare amountCents: number | null
-
-  @column({ columnName: 'monthly_cents' })
-  declare monthlyCents: number | null
-
-  @column.date({ columnName: 'available_on' })
-  declare availableOn: DateTime | null
+  declare amountCents: number
 
   @belongsTo(() => Wish)
   declare wish: BelongsTo<typeof Wish>
