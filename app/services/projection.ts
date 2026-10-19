@@ -1,4 +1,4 @@
-import { DateTime } from 'luxon'
+import type { DateTime } from 'luxon'
 
 /**
  * Projection mois par mois de l'argent disponible, et date d'achat de chaque envie.
