@@ -1,6 +1,7 @@
 import { useForm } from '@inertiajs/react'
+import { urlFor } from '~/client'
 import Field from '~/components/field'
-import SelectField from '~/components/select-field'
+import SelectField from '~/components/select_field'
 import { Button } from '~/components/ui/button'
 import {
   Dialog,
@@ -16,7 +17,7 @@ import { sourceTypeLabels } from '~/lib/format'
 
 export type SourceType = keyof typeof sourceTypeLabels
 
-export interface SourceData {
+export type SourceData = {
   id: number
   name: string
   type: SourceType
@@ -44,8 +45,8 @@ function SourceForm({ source, onDone }: { source: SourceData | null; onDone: () 
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (source) form.put(`/sources/${source.id}`, { onSuccess: onDone })
-    else form.post('/sources', { onSuccess: onDone })
+    if (source) form.put(urlFor('sources.update', { id: source.id }), { onSuccess: onDone })
+    else form.post(urlFor('sources.store'), { onSuccess: onDone })
   }
 
   const amountField = (
@@ -126,7 +127,7 @@ function SourceForm({ source, onDone }: { source: SourceData | null; onDone: () 
   )
 }
 
-interface Props {
+type Props = {
   source: SourceData | null
   open: boolean
   onOpenChange: (open: boolean) => void

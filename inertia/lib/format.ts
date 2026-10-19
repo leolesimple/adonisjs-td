@@ -21,7 +21,7 @@ export const sourceTypeLabels = {
 } as const
 
 // Résultat de projection d'une envie (calculé côté serveur, app/services/projection.ts)
-export interface WishProjection {
+export type WishProjection = {
   wishId: number
   state: 'ready' | 'planned' | 'unallocated' | 'beyond'
   allocatedCents: number
@@ -31,7 +31,7 @@ export interface WishProjection {
   onTime: boolean | null
 }
 
-export interface WishData {
+export type WishData = {
   id: number
   name: string
   priceCents: number

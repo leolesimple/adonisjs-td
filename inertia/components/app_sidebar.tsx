@@ -1,5 +1,7 @@
-import { Link, usePage } from '@inertiajs/react'
+import { usePage } from '@inertiajs/react'
+import { Link } from '@adonisjs/inertia/react'
 import { CalendarRange, Gift, Landmark } from 'lucide-react'
+import { urlFor } from '~/client'
 import {
   Sidebar,
   SidebarContent,
@@ -13,11 +15,12 @@ import {
   SidebarRail,
 } from '~/components/ui/sidebar'
 
+// Chaque entrée pointe vers une route nommée (voir start/routes.ts)
 const items = [
-  { title: 'Envies', href: '/wishes', icon: Gift },
-  { title: 'Comptes', href: '/sources', icon: Landmark },
-  { title: 'Projection', href: '/projection', icon: CalendarRange },
-]
+  { title: 'Envies', route: 'wishes.index', icon: Gift },
+  { title: 'Comptes', route: 'sources.index', icon: Landmark },
+  { title: 'Projection', route: 'projection.index', icon: CalendarRange },
+] as const
 
 export default function AppSidebar() {
   const { url } = usePage()
@@ -35,13 +38,13 @@ export default function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
-                <SidebarMenuItem key={item.href}>
+                <SidebarMenuItem key={item.route}>
                   <SidebarMenuButton
                     asChild
                     tooltip={item.title}
-                    isActive={url.startsWith(item.href)}
+                    isActive={url.startsWith(urlFor(item.route))}
                   >
-                    <Link href={item.href}>
+                    <Link route={item.route}>
                       <item.icon />
                       <span>{item.title}</span>
                     </Link>

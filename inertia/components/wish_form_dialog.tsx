@@ -1,6 +1,7 @@
 import { useForm } from '@inertiajs/react'
+import { urlFor } from '~/client'
 import Field from '~/components/field'
-import SelectField from '~/components/select-field'
+import SelectField from '~/components/select_field'
 import { Button } from '~/components/ui/button'
 import {
   Dialog,
@@ -37,8 +38,8 @@ function WishForm({ wish, onDone }: { wish: WishData | null; onDone: () => void 
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (wish) form.put(`/wishes/${wish.id}`, { onSuccess: onDone })
-    else form.post('/wishes', { onSuccess: onDone })
+    if (wish) form.put(urlFor('wishes.update', { id: wish.id }), { onSuccess: onDone })
+    else form.post(urlFor('wishes.store'), { onSuccess: onDone })
   }
 
   const textField = (name: TextField, label: string, type = 'text') => (

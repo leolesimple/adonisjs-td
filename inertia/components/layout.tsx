@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Head } from '@inertiajs/react'
-import AppSidebar from '~/components/app-sidebar'
+import AppSidebar from '~/components/app_sidebar'
 import { Separator } from '~/components/ui/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '~/components/ui/sidebar'
 

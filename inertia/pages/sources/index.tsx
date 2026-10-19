@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { router } from '@inertiajs/react'
+import { urlFor } from '~/client'
 import { ArrowRight, Pencil, Plus, Trash2 } from 'lucide-react'
-import ConfirmDialog from '~/components/confirm-dialog'
+import ConfirmDialog from '~/components/confirm_dialog'
 import Layout from '~/components/layout'
-import SourceFormDialog, { type SourceData } from '~/components/source-form-dialog'
-import TransferDialog from '~/components/transfer-dialog'
+import SourceFormDialog, { type SourceData } from '~/components/source_form_dialog'
+import TransferDialog from '~/components/transfer_dialog'
 import { Button } from '~/components/ui/button'
 import { Card } from '~/components/ui/card'
 import {
@@ -17,7 +18,7 @@ import {
 } from '~/components/ui/table'
 import { formatEuros, sourceTypeLabels } from '~/lib/format'
 
-interface TransferData {
+type TransferData = {
   id: number
   fromSourceName: string
   toSourceName: string
@@ -185,7 +186,7 @@ export default function Index({
         onOpenChange={(open) => !open && setDeleting(null)}
         title={`Supprimer « ${deleting?.name ?? ''} » ?`}
         description="Ses allocations et ses virements seront supprimés aussi. Cette action est définitive."
-        onConfirm={() => deleting && router.delete(`/sources/${deleting.id}`)}
+        onConfirm={() => deleting && router.delete(urlFor('sources.destroy', { id: deleting.id }))}
       />
       <ConfirmDialog
         open={removingTransfer !== null}
@@ -196,7 +197,10 @@ export default function Index({
             ? `${removingTransfer.fromSourceName} vers ${removingTransfer.toSourceName} : ${formatEuros(removingTransfer.amountCents)} par mois.`
             : ''
         }
-        onConfirm={() => removingTransfer && router.delete(`/transfers/${removingTransfer.id}`)}
+        onConfirm={() =>
+          removingTransfer &&
+          router.delete(urlFor('transfers.destroy', { id: removingTransfer.id }))
+        }
       />
     </Layout>
   )

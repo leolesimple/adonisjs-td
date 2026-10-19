@@ -1,6 +1,7 @@
 import { useForm } from '@inertiajs/react'
+import { urlFor } from '~/client'
 import Field from '~/components/field'
-import SelectField from '~/components/select-field'
+import SelectField from '~/components/select_field'
 import { Button } from '~/components/ui/button'
 import {
   Dialog,
@@ -26,7 +27,7 @@ function TransferForm({ sources, onDone }: { sources: Props['sources']; onDone: 
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
-    form.post('/transfers', { onSuccess: onDone })
+    form.post(urlFor('transfers.store'), { onSuccess: onDone })
   }
 
   return (

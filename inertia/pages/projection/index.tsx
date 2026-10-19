@@ -11,7 +11,7 @@ import {
 } from '~/components/ui/table'
 import { formatDate, formatEuros, type WishProjection } from '~/lib/format'
 
-interface MonthData {
+type MonthData = {
   month: number
   date: string
   usableCents: Record<string, number>
@@ -19,7 +19,7 @@ interface MonthData {
   purchases: { id: number; name: string }[]
 }
 
-interface Props {
+type Props = {
   sources: { id: number; name: string }[]
   months: MonthData[]
   wishes: {

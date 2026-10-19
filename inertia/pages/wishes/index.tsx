@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { Link, router } from '@inertiajs/react'
+import { router } from '@inertiajs/react'
+import { Link } from '@adonisjs/inertia/react'
+import { urlFor } from '~/client'
 import { ChevronDown, ChevronUp, Plus } from 'lucide-react'
 import Layout from '~/components/layout'
-import WishStatus from '~/components/wish-status'
-import WishFormDialog from '~/components/wish-form-dialog'
+import WishStatus from '~/components/wish_status'
+import WishFormDialog from '~/components/wish_form_dialog'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent } from '~/components/ui/card'
@@ -22,7 +24,7 @@ export default function Index({
   const allocated = wishes.reduce((sum, w) => sum + w.allocatedCents, 0)
 
   const move = (wish: WishData, direction: 'up' | 'down') =>
-    router.post(`/wishes/${wish.id}/move`, { direction }, { preserveScroll: true })
+    router.post(urlFor('wishes.move', { id: wish.id }), { direction }, { preserveScroll: true })
 
   return (
     <Layout title="Envies">
@@ -41,11 +43,13 @@ export default function Index({
 
       <nav aria-label="Filtrer par statut" className="mb-6 flex flex-wrap gap-2">
         <Button asChild size="sm" variant={status ? 'outline' : 'default'}>
-          <Link href="/wishes">Toutes</Link>
+          <Link route="wishes.index">Toutes</Link>
         </Button>
         {Object.entries(statusLabels).map(([key, label]) => (
           <Button key={key} asChild size="sm" variant={status === key ? 'default' : 'outline'}>
-            <Link href={`/wishes?status=${key}`}>{label}</Link>
+            <Link route="wishes.index" qs={{ status: key }}>
+              {label}
+            </Link>
           </Button>
         ))}
       </nav>
@@ -81,7 +85,8 @@ export default function Index({
               </Button>
             </div>
             <Link
-              href={`/wishes/${wish.id}`}
+              route="wishes.show"
+              routeParams={{ id: wish.id }}
               className="flex-1 rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
               <Card className="h-full transition-colors hover:bg-accent/50">

@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { Link, router } from '@inertiajs/react'
+import { router } from '@inertiajs/react'
+import { Link } from '@adonisjs/inertia/react'
+import { urlFor } from '~/client'
 import { ArrowLeft, Pencil, Plus, Trash2 } from 'lucide-react'
-import AllocationDialog from '~/components/allocation-dialog'
-import ConfirmDialog from '~/components/confirm-dialog'
+import AllocationDialog from '~/components/allocation_dialog'
+import ConfirmDialog from '~/components/confirm_dialog'
 import Layout from '~/components/layout'
-import WishFormDialog from '~/components/wish-form-dialog'
-import WishStatus from '~/components/wish-status'
+import WishFormDialog from '~/components/wish_form_dialog'
+import WishStatus from '~/components/wish_status'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent } from '~/components/ui/card'
@@ -20,7 +22,7 @@ import {
 } from '~/components/ui/table'
 import { formatEuros, priorityLabels, statusLabels, type WishData } from '~/lib/format'
 
-interface AllocationData {
+type AllocationData = {
   id: number
   fundingSourceId: number
   fundingSourceName: string
@@ -46,7 +48,7 @@ export default function Show({
   return (
     <Layout title={wish.name}>
       <Button asChild variant="ghost" size="sm" className="mb-4 -ml-2">
-        <Link href="/wishes">
+        <Link route="wishes.index">
           <ArrowLeft /> Toutes les envies
         </Link>
       </Button>
@@ -152,7 +154,7 @@ export default function Show({
         onOpenChange={setDeleting}
         title={`Supprimer « ${wish.name} » ?`}
         description="L'envie et ses allocations seront supprimées. Cette action est définitive."
-        onConfirm={() => router.delete(`/wishes/${wish.id}`)}
+        onConfirm={() => router.delete(urlFor('wishes.destroy', { id: wish.id }))}
       />
       <ConfirmDialog
         open={removing !== null}
@@ -160,7 +162,9 @@ export default function Show({
         title="Retirer cette allocation ?"
         description={`L'argent de « ${removing?.fundingSourceName ?? ''} » ne sera plus compté pour cette envie.`}
         confirmLabel="Retirer"
-        onConfirm={() => removing && router.delete(`/allocations/${removing.id}`)}
+        onConfirm={() =>
+          removing && router.delete(urlFor('allocations.destroy', { id: removing.id }))
+        }
       />
     </Layout>
   )

@@ -1,6 +1,7 @@
 import { useForm } from '@inertiajs/react'
+import { urlFor } from '~/client'
 import Field from '~/components/field'
-import SelectField from '~/components/select-field'
+import SelectField from '~/components/select_field'
 import { Button } from '~/components/ui/button'
 import {
   Dialog,
@@ -31,7 +32,7 @@ function AllocationForm({
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
-    form.post(`/wishes/${wish.id}/allocations`, { onSuccess: onDone })
+    form.post(urlFor('allocations.store', { wishId: wish.id }), { onSuccess: onDone })
   }
 
   return (
