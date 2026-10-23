@@ -2,8 +2,8 @@ import type { HttpContext } from '@adonisjs/core/http'
 import Wish from '#models/wish'
 import { wishMoveValidator, wishValidator } from '#validators/wish'
 import { toCents } from '#services/money'
-import { loadProjection } from '#services/projection_loader'
-import type { WishProjection } from '#services/projection'
+import projectionService from '#services/projection_service'
+import type { WishProjection } from '#services/projection_service'
 
 const STATUSES = ['wished', 'funding', 'bought', 'dropped']
 
@@ -39,7 +39,7 @@ export default class WishesController {
   async index({ inertia, request }: HttpContext) {
     const requested = request.input('status')
     const status = STATUSES.includes(requested) ? requested : null
-    const { wishes, result } = await loadProjection()
+    const { wishes, result } = await projectionService.load()
     const projections = new Map(result.wishes.map((p) => [p.wishId, p]))
 
     const visible = wishes.filter((wish) => !status || wish.status === status)
@@ -58,7 +58,7 @@ export default class WishesController {
   }
 
   async show({ params, inertia }: HttpContext) {
-    const { wishes, sources, result } = await loadProjection()
+    const { wishes, sources, result } = await projectionService.load()
     const wish = wishes.find((w) => w.id === Number(params.id))
     if (!wish) {
       const found = await Wish.query()

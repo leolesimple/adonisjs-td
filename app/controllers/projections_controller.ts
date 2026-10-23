@@ -1,9 +1,9 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import { loadProjection } from '#services/projection_loader'
+import projectionService from '#services/projection_service'
 
 export default class ProjectionsController {
   async index({ inertia }: HttpContext) {
-    const { sources, wishes, result } = await loadProjection()
+    const { sources, wishes, result } = await projectionService.load()
     const names = new Map(wishes.map((w) => [w.id, w.name]))
     const projections = new Map(result.wishes.map((p) => [p.wishId, p]))
 
