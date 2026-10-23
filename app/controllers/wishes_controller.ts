@@ -1,4 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
+import { DateTime } from 'luxon'
 import Wish from '#models/wish'
 import { wishMoveValidator, wishValidator } from '#validators/wish'
 import { toCents } from '#services/money'
@@ -16,7 +17,7 @@ const toColumns = (payload: Awaited<ReturnType<typeof wishValidator.validate>>) 
   imageUrl: payload.imageUrl ?? null,
   notes: payload.notes ?? null,
   status: payload.status,
-  targetDate: payload.targetDate ?? null,
+  targetDate: payload.targetDate ? DateTime.fromJSDate(payload.targetDate) : null,
 })
 
 const serialize = (wish: Wish, projection?: WishProjection) => ({

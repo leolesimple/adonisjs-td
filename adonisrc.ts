@@ -32,11 +32,7 @@ export default defineConfig({
     () => import('#providers/api_provider'),
   ],
 
-  preloads: [
-    () => import('#start/routes'),
-    () => import('#start/kernel'),
-    () => import('#start/validator'),
-  ],
+  preloads: [() => import('#start/routes'), () => import('#start/kernel')],
 
   metaFiles: [
     {
