@@ -7,6 +7,8 @@ Claude Code (CLI, modèle Claude Sonnet 5.5), dans mon terminal, directement sur
 - De l'aide surtout sur le frontend, faire une interface rapide et claire, d'abord en testant Bootsrap 6, puis en repassant sur Tailwind CSS
 - De l'aide sur des controleurs et des fonctions métiers, clairifer et aider sur de la rédaction de code plus propre.
 - Une migration de 6 vers 7 rapidement.
+- Le routing Inertia + React, avec les routes nommées et les URLs générées depuis celles-ci.
+- De l'aide sur AdonisJS en général
 
 ## Ce que j'ai décidé moi-même
 - Le sujet : une wishlist avec une stratégie de financement, en saisie manuelle.
@@ -19,6 +21,7 @@ Claude Code (CLI, modèle Claude Sonnet 5.5), dans mon terminal, directement sur
 - Bootstrap 6 est en alpha et ses classes diffèrent de la v5, ce qui m'a fait changer pour Tailwind.
 - Au changement de modèle (comptes et virements), ma migration supprimait toutes les allocations à cause de `ON DELETE CASCADE` sous SQLite. Il a fallu désactiver les clés étrangères pendant la migration.
 - J'avais par erreur commencé mon projet sur AdonisJS 6, j'ai donc dû reprendre avec la version 7 pour corriger les écarts avec le cours.
+- L'IA va souvent trop vite et écrit du code trop complexe pour le niveau actuel de mes connaissances.
 
 ## Erreurs de l'IA corrigées
 - SQLite n'applique pas les clés étrangères sans `PRAGMA foreign_keys = ON` : le CASCADE ne faisait rien. Corrigé dans la configuration de la base.
