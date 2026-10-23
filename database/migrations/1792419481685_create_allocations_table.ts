@@ -1,6 +1,5 @@
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
-// Montant qu'une envie prélève sur un compte
 export default class extends BaseSchema {
   protected tableName = 'allocations'
 

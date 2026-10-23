@@ -1,6 +1,5 @@
 import vine from '@vinejs/vine'
 
-// Les montants arrivent en euros depuis le formulaire et sont convertis en centimes dans le contrôleur.
 export const wishValidator = vine.create(
   vine.object({
     name: vine.string().trim().minLength(2).maxLength(120),

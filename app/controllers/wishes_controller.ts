@@ -7,8 +7,6 @@ import type { WishProjection } from '#services/projection'
 
 const STATUSES = ['wished', 'funding', 'bought', 'dropped']
 
-// Transforme les données validées (euros, champs optionnels absents) en colonnes de la table.
-// Les champs vidés dans le formulaire sont remis à null explicitement.
 const toColumns = (payload: Awaited<ReturnType<typeof wishValidator.validate>>) => ({
   name: payload.name,
   priceCents: toCents(payload.price),
@@ -18,11 +16,9 @@ const toColumns = (payload: Awaited<ReturnType<typeof wishValidator.validate>>) 
   imageUrl: payload.imageUrl ?? null,
   notes: payload.notes ?? null,
   status: payload.status,
-  // VineJS renvoie déjà un DateTime (transform global dans start/validator.ts)
   targetDate: payload.targetDate ?? null,
 })
 
-// Une envie vue par le front : ses colonnes + son résultat de projection (null si achetée ou abandonnée)
 const serialize = (wish: Wish, projection?: WishProjection) => ({
   id: wish.id,
   name: wish.name,
@@ -55,7 +51,6 @@ export default class WishesController {
 
   async store({ request, response }: HttpContext) {
     const payload = await request.validateUsing(wishValidator)
-    // Nouvelle envie : dernier rang
     const last = await Wish.query().max('rank as max').first()
     const rank = Number(last?.$extras.max ?? 0) + 1
     const wish = await Wish.create({ ...toColumns(payload), rank })
@@ -66,7 +61,6 @@ export default class WishesController {
     const { wishes, sources, result } = await loadProjection()
     const wish = wishes.find((w) => w.id === Number(params.id))
     if (!wish) {
-      // Envie achetée ou abandonnée (hors projection) ou inexistante : on la lit directement
       const found = await Wish.query()
         .where('id', params.id)
         .preload('allocations', (q) => q.preload('fundingSource'))
@@ -100,7 +94,6 @@ export default class WishesController {
     const wish = await Wish.query().where('id', params.id).preload('allocations').firstOrFail()
     const payload = await request.validateUsing(wishValidator)
 
-    // Le prix ne peut pas passer sous le total déjà alloué
     const allocatedCents = wish.allocations.reduce((sum, a) => sum + a.amountCents, 0)
     if (toCents(payload.price) < allocatedCents) {
       session.flash('errors', {
@@ -113,7 +106,6 @@ export default class WishesController {
     return response.redirect().toRoute('wishes.show', { id: wish.id })
   }
 
-  // Monte ou descend l'envie d'un rang en échangeant son rang avec sa voisine
   async move({ params, request, response }: HttpContext) {
     const { direction } = await request.validateUsing(wishMoveValidator)
     const wish = await Wish.findOrFail(params.id)

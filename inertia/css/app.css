@@ -1,10 +1,8 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
-/* Pas de bascule de thème dans l'appli : seul le thème clair est utilisé */
 @custom-variant dark (&:is(.dark *));
 
-/* Thème shadcn/ui (neutral). Les composants lisent ces variables. */
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);

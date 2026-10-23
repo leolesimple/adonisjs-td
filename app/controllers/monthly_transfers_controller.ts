@@ -8,7 +8,6 @@ export default class MonthlyTransfersController {
   async store({ request, response, session }: HttpContext) {
     const { fromSourceId, toSourceId, amount } =
       await request.validateUsing(monthlyTransferValidator)
-    // Un virement d'un compte vers lui-même n'a pas de sens : erreur affichée sous le champ
     if (fromSourceId === toSourceId) {
       session.flash('errors', { toSourceId: 'Les deux comptes doivent être différents.' })
       return response.redirect().back()

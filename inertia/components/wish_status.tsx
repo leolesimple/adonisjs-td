@@ -1,7 +1,6 @@
 import type { WishData } from '~/lib/format'
 import { formatDate, formatEuros } from '~/lib/format'
 
-// Phrase qui résume ce que dit la projection pour une envie
 export default function WishStatus({ wish }: { wish: WishData }) {
   const p = wish.projection
   if (!p) return null

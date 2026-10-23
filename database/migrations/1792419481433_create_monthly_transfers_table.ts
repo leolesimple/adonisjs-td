@@ -1,7 +1,5 @@
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
-// Virement programmé chaque mois d'un compte vers un autre.
-// L'argent arrivé sur le compte cible n'est utilisable qu'à la paie suivante.
 export default class extends BaseSchema {
   protected tableName = 'monthly_transfers'
 

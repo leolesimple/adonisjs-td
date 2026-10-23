@@ -4,7 +4,6 @@ import AppSidebar from '~/components/app_sidebar'
 import { Separator } from '~/components/ui/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '~/components/ui/sidebar'
 
-// Coque de toutes les pages : sidebar rétractable, en-tête avec le titre, contenu
 export default function Layout({ title, children }: { title: string; children: ReactNode }) {
   return (
     <SidebarProvider>

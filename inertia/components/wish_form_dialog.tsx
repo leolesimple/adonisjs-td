@@ -21,7 +21,6 @@ type TextField = 'name' | 'category' | 'url' | 'imageUrl'
 const toOptions = (labels: Record<string, string>) =>
   Object.entries(labels).map(([value, label]) => ({ value, label }))
 
-// Le formulaire vit dans DialogContent : il est recréé à chaque ouverture, donc toujours à jour
 function WishForm({ wish, onDone }: { wish: WishData | null; onDone: () => void }) {
   const form = useForm({
     name: wish?.name ?? '',

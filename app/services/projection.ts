@@ -1,18 +1,5 @@
 import type { DateTime } from 'luxon'
 
-/**
- * Projection mois par mois de l'argent disponible, et date d'achat de chaque envie.
- *
- * Règles :
- * - Chaque compte a un solde utilisable tout de suite.
- * - À chaque paie, un compte reçoit son budget mensuel (ex. le compte courant donne 150 € aux envies).
- * - À chaque paie, les virements programmés arrivent sur le compte cible, mais ils sont
- *   BLOQUÉS jusqu'à la paie suivante : placé en novembre, utilisable à la paie de décembre.
- * - Les envies sont servies par rang (1 = d'abord). Une envie est achetée dès que toutes
- *   ses allocations sont couvertes par les comptes. Une envie en attente réserve son argent
- *   pour ne pas se le faire prendre par une envie moins prioritaire.
- */
-
 export interface ProjectionSource {
   id: number
   name: string
@@ -20,8 +7,6 @@ export interface ProjectionSource {
   monthlyBudgetCents: number
 }
 
-// Seul le compte cible compte pour le calcul : la sortie du compte courant est déjà
-// comptée dans son budget mensuel (le budget envies est fixé après le virement).
 export interface ProjectionTransfer {
   toSourceId: number
   amountCents: number
@@ -44,34 +29,22 @@ export interface ProjectionInput {
   horizonMonths?: number
 }
 
-export type WishState =
-  // achetable dès maintenant
-  | 'ready'
-  // achetable à une paie future
-  | 'planned'
-  // les allocations ne couvrent pas le prix
-  | 'unallocated'
-  // pas achetable dans l'horizon de projection
-  | 'beyond'
+export type WishState = 'ready' | 'planned' | 'unallocated' | 'beyond'
 
 export interface WishProjection {
   wishId: number
   state: WishState
   allocatedCents: number
   missingCents: number
-  // 0 = maintenant, 1 = première paie à venir, etc.
   month: number | null
   date: string | null
-  // null si l'envie n'a pas de date cible
   onTime: boolean | null
 }
 
 export interface MonthRow {
   month: number
   date: string
-  // Argent utilisable par compte après les achats du mois
   usableCents: Record<number, number>
-  // Argent arrivé ce mois-ci par virement, bloqué jusqu'à la paie suivante
   lockedCents: Record<number, number>
   purchases: number[]
 }
@@ -83,7 +56,6 @@ export interface ProjectionResult {
 
 const DEFAULT_HORIZON = 24
 
-/** Date de la k-ième paie à venir (k = 1 : la première paie strictement après aujourd'hui). */
 export function nextPayday(today: DateTime, payDay: number, k: number): DateTime {
   const day = Math.min(Math.max(payDay, 1), 28)
   let first = today.startOf('day').set({ day })
@@ -111,7 +83,6 @@ export function project(input: ProjectionInput): ProjectionResult {
   )
   const fullyAllocated = (w: ProjectionWish) => (allocated.get(w.id) ?? 0) >= w.priceCents
 
-  // Achète, dans l'ordre des rangs, toutes les envies que les comptes couvrent à cette date
   const buy = (month: number, date: DateTime): number[] => {
     const reserved = new Map<number, number>()
     const bought: number[] = []
@@ -151,13 +122,11 @@ export function project(input: ProjectionInput): ProjectionResult {
   for (let month = 1; month <= horizon; month++) {
     const date = nextPayday(today, input.payDay, month)
 
-    // Budget mensuel de chaque compte, plus les virements du mois dernier qui se débloquent
     for (const source of input.sources) {
       const unlocked = incomingLastMonth.get(source.id) ?? 0
       pools.set(source.id, pools.get(source.id)! + source.monthlyBudgetCents + unlocked)
     }
 
-    // Virements de ce mois : bloqués jusqu'à la paie suivante
     const incomingNow = new Map<number, number>()
     for (const transfer of input.transfers) {
       incomingNow.set(

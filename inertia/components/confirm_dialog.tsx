@@ -18,7 +18,6 @@ interface ConfirmDialogProps {
   onConfirm: () => void
 }
 
-// Modale de confirmation avant une suppression
 export default function ConfirmDialog({
   open,
   onOpenChange,

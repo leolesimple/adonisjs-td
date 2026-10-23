@@ -12,9 +12,7 @@ export default class AllocationsController {
   async store({ params, request, response, session }: HttpContext) {
     const wish = await Wish.findOrFail(params.wishId)
     const { fundingSourceId, amount } = await request.validateUsing(allocationValidator)
-    // 404 plutôt qu'une erreur SQL si la source n'existe pas
     await FundingSource.findOrFail(fundingSourceId)
-    // On ne peut pas allouer plus que le prix : erreur affichée sous le champ montant
     const amountCents = toCents(amount)
     const allocated = await Allocation.query()
       .where('wish_id', wish.id)

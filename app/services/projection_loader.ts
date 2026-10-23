@@ -4,7 +4,6 @@ import FundingSource from '#models/funding_source'
 import MonthlyTransfer from '#models/monthly_transfer'
 import { project, type ProjectionResult } from '#services/projection'
 
-// Les envies déjà achetées ou abandonnées ne consomment plus d'argent
 const ACTIVE_STATUSES = ['wished', 'funding']
 
 export interface LoadedProjection {
@@ -14,10 +13,6 @@ export interface LoadedProjection {
   result: ProjectionResult
 }
 
-/**
- * Lit les envies, comptes et virements en base puis lance le calcul de projection.
- * Le calcul lui-même (app/services/projection.ts) ne connaît pas la base de données.
- */
 export async function loadProjection(today = DateTime.now()): Promise<LoadedProjection> {
   const [sources, transfers, wishes] = await Promise.all([
     FundingSource.query().orderBy('name'),

@@ -15,7 +15,6 @@ import {
   SidebarRail,
 } from '~/components/ui/sidebar'
 
-// Chaque entrée pointe vers une route nommée (voir start/routes.ts)
 const items = [
   { title: 'Envies', route: 'wishes.index', icon: Gift },
   { title: 'Comptes', route: 'sources.index', icon: Landmark },

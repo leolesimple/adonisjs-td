@@ -20,7 +20,6 @@ export const sourceTypeLabels = {
   income: 'Revenu',
 } as const
 
-// Résultat de projection d'une envie (calculé côté serveur, app/services/projection.ts)
 export type WishProjection = {
   wishId: number
   state: 'ready' | 'planned' | 'unallocated' | 'beyond'
@@ -44,6 +43,5 @@ export type WishData = {
   status: keyof typeof statusLabels
   targetDate: string | null
   allocatedCents: number
-  // null pour une envie achetée ou abandonnée : elle sort de la projection
   projection: WishProjection | null
 }

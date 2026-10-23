@@ -9,7 +9,6 @@ interface FieldProps {
   children: ReactNode
 }
 
-// Un champ de formulaire : label, contrôle et message d'erreur VineJS
 export default function Field({ id, label, error, hint, children }: FieldProps) {
   return (
     <div className="grid gap-2">

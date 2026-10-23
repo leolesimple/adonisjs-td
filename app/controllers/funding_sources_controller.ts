@@ -32,7 +32,6 @@ export default class FundingSourcesController {
         monthlyIncomeCents: s.monthlyIncomeCents,
         monthlyBudgetCents: s.monthlyBudgetCents,
         payDay: s.payDay,
-        // Total que les envies prélèvent sur ce compte
         allocatedCents: s.allocations.reduce((sum, a) => sum + a.amountCents, 0),
       })),
       transfers: transfers.map((t) => ({

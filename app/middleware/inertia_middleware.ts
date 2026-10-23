@@ -4,21 +4,12 @@ import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware'
 
 export default class InertiaMiddleware extends BaseInertiaMiddleware {
   share(ctx: HttpContext) {
-    /**
-     * Data shared with all Inertia pages : ici seulement les erreurs de validation VineJS,
-     * affichées sous les champs des formulaires.
-     */
     return {
       errors: ctx.inertia.always(this.getValidationErrors(ctx)),
     }
   }
 
   flash(ctx: HttpContext) {
-    /**
-     * Flash messages travel in the dedicated `flash` field of the page
-     * object instead of props, and the client strips them from history
-     * state so they never reappear when navigating back.
-     */
     const { session } = ctx as Partial<HttpContext>
 
     const success: string | undefined = session?.flashMessages.get('success')

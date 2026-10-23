@@ -19,7 +19,6 @@ interface SelectFieldProps {
   placeholder?: string
 }
 
-// Liste déroulante shadcn branchée sur un formulaire Inertia
 export default function SelectField({
   id,
   label,

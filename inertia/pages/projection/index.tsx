@@ -32,7 +32,6 @@ type Props = {
 }
 
 export default function Index({ sources, months, wishes }: Props) {
-  // On s'arrête à 2 mois après le dernier achat pour garder un tableau lisible
   const lastPurchase = months.reduce((last, m) => (m.purchases.length > 0 ? m.month : last), 0)
   const visible = months.filter((m) => m.month <= Math.max(lastPurchase + 2, 6))
 

@@ -1,11 +1,9 @@
 import { type SchemaRules } from '@adonisjs/lucid/types/schema_generator'
 
-// Personnalise les types TypeScript du fichier database/schema.ts (généré à chaque migration)
 const column = [{ name: '@column' }]
 
 export default {
   types: {
-    // Les montants en centimes tiennent dans un number : pas besoin de bigint
     bigint: { tsType: 'number', decorators: column },
   },
   tables: {

@@ -7,11 +7,9 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id').notNullable()
       table.string('name').notNullable()
-      // Prix en centimes
       table.bigInteger('price_cents').notNullable()
       table.string('category').nullable()
       table.enum('priority', ['low', 'medium', 'high']).notNullable().defaultTo('medium')
-      // Ordre de financement : 1 = financée en premier
       table.integer('rank').notNullable().defaultTo(0)
       table.string('url').nullable()
       table.string('image_url').nullable()
