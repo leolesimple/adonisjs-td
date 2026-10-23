@@ -8,7 +8,7 @@ Claude Code (CLI, modèle Claude Sonnet 5.5), dans mon terminal, directement sur
 - De l'aide sur des controleurs et des fonctions métiers, clairifer et aider sur de la rédaction de code plus propre.
 - Une migration de 6 vers 7 rapidement.
 - Le routing Inertia + React, avec les routes nommées et les URLs générées depuis celles-ci.
-- De l'aide sur AdonisJS en général
+- De l'aide sur AdonisJS / Lucid en général, surtout au niveau des controleurs.
 
 ## Ce que j'ai décidé moi-même
 - Le sujet : une wishlist avec une stratégie de financement, en saisie manuelle.
