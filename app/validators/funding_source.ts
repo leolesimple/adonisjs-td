@@ -1,13 +1,11 @@
 import vine from '@vinejs/vine'
 
-export const fundingSourceValidator = vine.create(
-  vine.object({
-    name: vine.string().trim().minLength(2).maxLength(80),
-    type: vine.enum(['savings', 'checking', 'income'] as const),
-    notes: vine.string().trim().maxLength(500).optional(),
-    balance: vine.number().min(0).max(10_000_000),
-    monthlyIncome: vine.number().min(0).max(1_000_000).optional(),
-    monthlyBudget: vine.number().min(0).max(1_000_000).optional(),
-    payDay: vine.number().withoutDecimals().min(1).max(28).optional(),
-  })
-)
+export const fundingSourceValidator = vine.create({
+  name: vine.string().trim().minLength(2).maxLength(80),
+  type: vine.enum(['savings', 'checking', 'income'] as const),
+  notes: vine.string().trim().maxLength(500).optional(),
+  balance: vine.number().min(0).max(10_000_000),
+  monthlyIncome: vine.number().min(0).max(1_000_000).optional(),
+  monthlyBudget: vine.number().min(0).max(1_000_000).optional(),
+  payDay: vine.number().withoutDecimals().min(1).max(28).optional(),
+})
